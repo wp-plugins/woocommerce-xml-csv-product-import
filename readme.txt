@@ -1,7 +1,7 @@
 === Import Products from any XML or CSV to WooCommerce ===
 Contributors: soflyy
 Requires at least: 3.5
-Tested up to: 3.5.1
+Tested up to: 3.5.2
 Stable tag: 0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
