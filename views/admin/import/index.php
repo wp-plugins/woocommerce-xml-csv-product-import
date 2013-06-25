@@ -11,7 +11,10 @@
 						<div class="input">
 							<select name="multiple_product_type" id="product-type" style="vertical-align:middle; height:23px; width:220px;">
 								<optgroup label="Product Type">
-									<option value="simple" <?php echo 'simple' == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php _e('Simple product', 'woocommerce');?></option>									
+									<option value="simple" <?php echo 'simple' == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php _e('Simple product', 'woocommerce');?></option>
+									<option value="grouped" <?php echo 'grouped' == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php _e('Grouped product','woocommerce');?></option>
+									<option value="external" <?php echo 'external' == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php _e('External/Affiliate product','woocommerce');?></option>
+									<option value="variable" <?php echo 'variable' == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php _e('Variable product','woocommerce');?></option>
 								</optgroup>
 							</select>
 						</div>
@@ -58,7 +61,11 @@
 
 					</ul>					
 
-					<div class="panel woocommerce_options_panel" id="general_product_data">						
+					<div class="panel woocommerce_options_panel" id="general_product_data">
+
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 
 						<div class="options_group hide_if_grouped">
 							<p class="form-field">
@@ -224,7 +231,9 @@
 					<!-- INVENTORY -->
 
 					<div class="panel woocommerce_options_panel" id="inventory_product_data" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group show_if_simple show_if_variable">																					
 							<p class="form-field">Manage stock?</p>
 							<div class="input" style="margin-top:-10px;">
@@ -333,7 +342,9 @@
 					<!-- SHIPPING -->
 
 					<div class="panel woocommerce_options_panel" id="shipping_product_data" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group">							
 							<p class="form-field">
 								<label><?php _e("Weight (kg)"); ?></label>
@@ -392,7 +403,9 @@
 					<!-- LINKED PRODUCT -->
 
 					<div class="panel woocommerce_options_panel" id="linked_product_data" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group">							
 							<p class="form-field">
 								<label><?php _e("Up-Sells"); ?></label>
@@ -453,7 +466,9 @@
 					<!-- ATTRIBUTES -->
 
 					<div class="panel woocommerce_options_panel" id="woocommerce_attributes" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="input">							
 							<table class="form-table custom-params" id="attributes_table" style="max-width:95%;">
 								<thead>
@@ -561,7 +576,9 @@
 					<!-- ADVANCED -->
 
 					<div class="panel woocommerce_options_panel" id="advanced_product_data" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group hide_if_external" style="padding-bottom:0px;">							
 							<p class="form-field">
 								<label><?php _e("Purchase Note"); ?></label>
@@ -656,7 +673,9 @@
 					<!-- VARIATIONS -->
 
 					<div class="panel woocommerce_options_panel" id="variable_product_options" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group" style="padding-bottom:0px;">
 							<div class="input" style="padding-bottom:10px;">
 								<input type="radio" id="auto_matching_parent" class="switcher" name="matching_parent" value="auto" <?php echo 'manual' != $post['matching_parent'] ? 'checked="checked"': '' ?>/>
@@ -1136,7 +1155,9 @@
 					<!-- OPTIONS -->
 
 					<div class="panel woocommerce_options_panel" id="add_on_options" style="display:none;">
-						
+						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
+							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
+						</p>
 						<div class="options_group">
 							<p class="form-field" style="font-size:16px; font-weight:bold;"><?php _e('Re-import options','pmxi_plugin');?></p>
 							<div class="input" style="padding-left:20px;">
