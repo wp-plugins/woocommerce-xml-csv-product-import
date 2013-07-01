@@ -1106,22 +1106,7 @@
 													</table>
 												</div>
 											</div>
-										</div>
-										<div id="variations_tag" class="options_group show_if_variable">
-											<div class="variations_tree">
-												<div id="variations_console"></div>
-												<div id="variations_xml" style="min-height:400px;">
-													<div class="variations_tag">
-														<input type="hidden" name="variations_tagno" value="<?php echo $tagno ?>" />
-														<div class="title">
-															<?php printf(__('No matching elements found for XPath expression specified', 'pmxi_plugin'), $tagno, $variation_list_count); ?>
-														</div>
-														<div class="clear"></div>
-														<div class="xml resetable"></div>
-													</div>
-												</div>
-											</div>
-										</div>
+										</div>										
 									</div>
 								</div>
 							</div>

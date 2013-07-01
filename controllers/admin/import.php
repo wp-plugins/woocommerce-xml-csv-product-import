@@ -28,7 +28,7 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 				+ $default			
 			);
 
-		$this->data['is_loaded_template'] = $_SESSION['pmxi_import']['is_loaded_template'];
+		$this->data['is_loaded_template'] = PMXI_Plugin::$session->data['pmxi_import']['is_loaded_template'];
 
 		$load_options = $this->input->post('load_template');
 

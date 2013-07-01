@@ -327,7 +327,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 	public function import($pid, $i, $import, $articleData, $xml, $is_cron = false){
 
-		$logger = create_function('$m', 'echo "<div class=\\"progress-msg\\">$m</div>\\n"; if ( "" != strip_tags(pmxi_strip_tags_content($m))) { $_SESSION[\'pmxi_import\'][\'log\'] .= "<p>".strip_tags(pmxi_strip_tags_content($m))."</p>"; flush(); }');		
+		$logger = create_function('$m', 'echo "<div class=\\"progress-msg\\">$m</div>\\n"; if ( "" != strip_tags(pmxi_strip_tags_content($m))) { PMXI_Plugin::$session[\'pmxi_import\'][\'log\'] .= "<p>".strip_tags(pmxi_strip_tags_content($m))."</p>"; flush(); }');		
 
 		global $woocommerce;
 
@@ -342,31 +342,34 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		$is_virtual 		= $product_virtual[$i];
 		$is_featured 		= $product_featured[$i];
 
+		$existing_meta_keys = array();
+		foreach (get_post_meta($pid, '') as $cur_meta_key => $cur_meta_val) $existing_meta_keys[] = $cur_meta_key;
+				
 		// Product type + Downloadable/Virtual
 		wp_set_object_terms( $pid, $product_type, 'product_type' );
-		update_post_meta( $pid, '_downloadable', ($is_downloadable == "yes") ? 'yes' : 'no' );
-		update_post_meta( $pid, '_virtual', ($is_virtual == "yes") ? 'yes' : 'no' );						
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_downloadable')) update_post_meta( $pid, '_downloadable', ($is_downloadable == "yes") ? 'yes' : 'no' );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_virtual')) update_post_meta( $pid, '_virtual', ($is_virtual == "yes") ? 'yes' : 'no' );						
 
 		// Update post meta
-		update_post_meta( $pid, '_regular_price', stripslashes( $product_regular_price[$i] ) );
-		update_post_meta( $pid, '_sale_price', stripslashes( $product_sale_price[$i] ) );
-		update_post_meta( $pid, '_tax_status', stripslashes( $product_tax_status[$i] ) );
-		update_post_meta( $pid, '_tax_class', stripslashes( $product_tax_class[$i] ) );			
-		update_post_meta( $pid, '_visibility', stripslashes( $product_visibility[$i] ) );			
-		update_post_meta( $pid, '_purchase_note', stripslashes( $product_purchase_note[$i] ) );
-		update_post_meta( $pid, '_featured', ($is_featured == "yes") ? 'yes' : 'no' );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_regular_price')) update_post_meta( $pid, '_regular_price', stripslashes( $product_regular_price[$i] ) );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price')) update_post_meta( $pid, '_sale_price', stripslashes( $product_sale_price[$i] ) );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_tax_status')) update_post_meta( $pid, '_tax_status', stripslashes( $product_tax_status[$i] ) );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_tax_class')) update_post_meta( $pid, '_tax_class', stripslashes( $product_tax_class[$i] ) );			
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_visibility')) update_post_meta( $pid, '_visibility', stripslashes( $product_visibility[$i] ) );			
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_purchase_note')) update_post_meta( $pid, '_purchase_note', stripslashes( $product_purchase_note[$i] ) );
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_featured')) update_post_meta( $pid, '_featured', ($is_featured == "yes") ? 'yes' : 'no' );
 
 		// Dimensions
 		if ( $is_virtual == 'no' ) {
-			update_post_meta( $pid, '_weight', stripslashes( $product_weight[$i] ) );
-			update_post_meta( $pid, '_length', stripslashes( $product_length[$i] ) );
-			update_post_meta( $pid, '_width', stripslashes( $product_width[$i] ) );
-			update_post_meta( $pid, '_height', stripslashes( $product_height[$i] ) );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_weight')) update_post_meta( $pid, '_weight', stripslashes( $product_weight[$i] ) );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_length')) update_post_meta( $pid, '_length', stripslashes( $product_length[$i] ) );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_width')) update_post_meta( $pid, '_width', stripslashes( $product_width[$i] ) );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_height')) update_post_meta( $pid, '_height', stripslashes( $product_height[$i] ) );
 		} else {
-			update_post_meta( $pid, '_weight', '' );
-			update_post_meta( $pid, '_length', '' );
-			update_post_meta( $pid, '_width', '' );
-			update_post_meta( $pid, '_height', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_weight')) update_post_meta( $pid, '_weight', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_length')) update_post_meta( $pid, '_length', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_width')) update_post_meta( $pid, '_width', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_height')) update_post_meta( $pid, '_height', '' );
 		}
 
 		// Save shipping class
@@ -378,7 +381,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		$new_sku 			= esc_html( trim( stripslashes( $product_sku[$i] ) ) );
 		
 		if ( $new_sku == '' ) {
-			update_post_meta( $pid, '_sku', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sku')) update_post_meta( $pid, '_sku', '' );
 		} elseif ( $new_sku !== $sku ) {
 			if ( ! empty( $new_sku ) ) {
 				if (
@@ -394,10 +397,10 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: Product SKU must be unique.', 'pmxi_plugin')));
 					
 				} else {
-					update_post_meta( $pid, '_sku', $new_sku );
+					if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sku')) update_post_meta( $pid, '_sku', $new_sku );
 				}
 			} else {
-				update_post_meta( $pid, '_sku', '' );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sku')) update_post_meta( $pid, '_sku', '' );
 			}
 		}
 
@@ -570,45 +573,93 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			}							
 		}						
 		
-		update_post_meta( $pid, '_product_attributes', $attributes );		
+		if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_product_attributes')) update_post_meta( $pid, '_product_attributes', $attributes );
 
-		$date_from = isset( $product_sale_price_dates_from[$i] ) ? $product_sale_price_dates_from[$i] : '';
-		$date_to = isset( $product_sale_price_dates_to[$i] ) ? $product_sale_price_dates_to[$i] : '';
+		// Sales and prices
+		if ( ! in_array( $product_type, array( 'grouped' ) ) ) {
 
-		// Dates
-		if ( $date_from )
-			update_post_meta( $pid, '_sale_price_dates_from', strtotime( $date_from ) );
-		else
-			update_post_meta( $pid, '_sale_price_dates_from', '' );
+			$date_from = isset( $product_sale_price_dates_from[$i] ) ? $product_sale_price_dates_from[$i] : '';
+			$date_to = isset( $product_sale_price_dates_to[$i] ) ? $product_sale_price_dates_to[$i] : '';
 
-		if ( $date_to )
-			update_post_meta( $pid, '_sale_price_dates_to', strtotime( $date_to ) );
-		else
-			update_post_meta( $pid, '_sale_price_dates_to', '' );
+			// Dates
+			if ( $date_from ){
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', strtotime( $date_from ) );
+			}
+			else{
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', '' );
+			}
 
-		if ( $date_to && ! $date_from )
-			update_post_meta( $pid, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
+			if ( $date_to ){
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', strtotime( $date_to ) );
+			}
+			else{
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', '' );
+			}
 
-		// Update price if on sale
-		if ( $product_sale_price[$i] != '' && $date_to == '' && $date_from == '' )
-			update_post_meta( $pid, '_price', stripslashes( $product_sale_price[$i] ) );
-		else
-			update_post_meta( $pid, '_price', stripslashes( $product_regular_price[$i] ) );
+			if ( $date_to && ! $date_from ){
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
+			}
 
-		if ( $product_sale_price[$i] != '' && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) )
-			update_post_meta( $pid, '_price', stripslashes($product_sale_price[$i]) );
+			// Update price if on sale
+			if ( $product_sale_price[$i] != '' && $date_to == '' && $date_from == '' ){
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes( $product_sale_price[$i] ) );
+			}
+			else{
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes( $product_regular_price[$i] ) );
+			}
 
-		if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
-			update_post_meta( $pid, '_price', stripslashes($product_regular_price[$i]) );
-			update_post_meta( $pid, '_sale_price_dates_from', '');
-			update_post_meta( $pid, '_sale_price_dates_to', '');
-		}		
+			if ( $product_sale_price[$i] != '' && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ){
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes($product_sale_price[$i]) );				
+			}
+
+			if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes($product_regular_price[$i]) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', '');
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', '');
+			}
+		}
+
+		// Update parent if grouped so price sorting works and stays in sync with the cheapest child
+		if ( $product_type == 'grouped' || ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0)) {
+
+			$clear_parent_ids = array();													
+
+			if ( $product_type == 'grouped' )
+				$clear_parent_ids[] = $pid;		
+
+			if ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0 )
+				$clear_parent_ids[] = absint( $product_grouping_parent[$i] );					
+
+			if ( $clear_parent_ids ) {
+				foreach( $clear_parent_ids as $clear_id ) {
+
+					$children_by_price = get_posts( array(
+						'post_parent' 	=> $clear_id,
+						'orderby' 		=> 'meta_value_num',
+						'order'			=> 'asc',
+						'meta_key'		=> '_price',
+						'posts_per_page'=> 1,
+						'post_type' 	=> 'product',
+						'fields' 		=> 'ids'
+					) );
+					if ( $children_by_price ) {
+						foreach ( $children_by_price as $child ) {
+							$child_price = get_post_meta( $child, '_price', true );
+							update_post_meta( $clear_id, '_price', $child_price );
+						}
+					}
+
+					// Clear cache/transients
+					$woocommerce->clear_product_transients( $clear_id );
+				}
+			}
+		}
 
 		// Sold Individuall
 		if ( "yes" == $product_sold_individually[$i] ) {
-			update_post_meta( $pid, '_sold_individually', 'yes' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sold_individually')) update_post_meta( $pid, '_sold_individually', 'yes' );
 		} else {
-			update_post_meta( $pid, '_sold_individually', '' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_sold_individually')) update_post_meta( $pid, '_sold_individually', '' );
 		}
 		
 		// Stock Data
@@ -617,28 +668,29 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			if ( ! empty( $product_manage_stock[$i] ) ) {
 
 				// Manage stock
-				update_post_meta( $pid, '_stock', (int) $product_stock_qty[$i] );
-				update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
-				update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
-				update_post_meta( $pid, '_manage_stock', 'yes' );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', (int) $product_stock_qty[$i] );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_manage_stock')) update_post_meta( $pid, '_manage_stock', 'yes' );
 
 				// Check stock level
-				if ( $product_type !== 'variable' && $product_allow_backorders[$i] == 'no' && (int) $product_stock_qty[$i] < 1 )
-					update_post_meta( $pid, '_stock_status', 'outofstock' );
+				if ( $product_type !== 'variable' && $product_allow_backorders[$i] == 'no' && (int) $product_stock_qty[$i] < 1 ){
+					if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', 'outofstock' );
+				}
 
 			} else {
 
 				// Don't manage stock
-				update_post_meta( $pid, '_stock', '' );
-				update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
-				update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
-				update_post_meta( $pid, '_manage_stock', 'no' );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', '' );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_manage_stock')) update_post_meta( $pid, '_manage_stock', 'no' );
 
 			}
 
 		} else {
 
-			update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
 
 		}
 
@@ -663,9 +715,9 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				wp_reset_postdata();
 			}								
 
-			update_post_meta( $pid, '_upsell_ids', $upsells );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_upsell_ids')) update_post_meta( $pid, '_upsell_ids', $upsells );
 		} else {
-			delete_post_meta( $pid, '_upsell_ids' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_upsell_ids')) delete_post_meta( $pid, '_upsell_ids' );
 		}
 
 		// Cross sells
@@ -689,9 +741,9 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				wp_reset_postdata();
 			}								
 
-			update_post_meta( $pid, '_crosssell_ids', $crosssells );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_crosssell_ids')) update_post_meta( $pid, '_crosssell_ids', $crosssells );
 		} else {
-			delete_post_meta( $pid, '_crosssell_ids' );
+			if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_crosssell_ids')) delete_post_meta( $pid, '_crosssell_ids' );
 		}
 
 		// Downloadable options
@@ -712,28 +764,20 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				$file_paths = explode( $import->options['product_files_delim'] , $product_file_paths[$i] );
 
 				foreach ( $file_paths as $file_path ) {
-					$file_path = trim( $file_path );
+					$file_path = trim( $file_path );					
 					$_file_paths[ md5( $file_path ) ] = $file_path;
 				}				
 
 				// grant permission to any newly added files on any existing orders for this product
 				do_action( 'woocommerce_process_product_file_download_paths', $pid, 0, $_file_paths );
 
-				update_post_meta( $pid, '_file_paths', $_file_paths );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_file_paths')) update_post_meta( $pid, '_file_paths', $_file_paths );
 			}
 			if ( isset( $product_download_limit[$i] ) )
-				update_post_meta( $pid, '_download_limit', esc_attr( $_download_limit ) );
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_download_limit')) update_post_meta( $pid, '_download_limit', esc_attr( $_download_limit ) );
 			if ( isset( $product_download_expiry[$i] ) )
-				update_post_meta( $pid, '_download_expiry', esc_attr( $_download_expiry ) );
-		}
-
-		// Product url
-		if ( $product_type == 'external' ) {
-			if ( isset( $product_url[$i] ) && $product_url[$i] )
-				update_post_meta( $pid, '_product_url', esc_attr( $product_url[$i] ) );
-			if ( isset( $product_button_text[$i] ) && $product_button_text[$i] )
-				update_post_meta( $pid, '_button_text', esc_attr( $product_button_text[$i] ) );
-		}						
+				if ($this->keep_custom_fields($existing_meta_keys, $import->options, '_download_expiry')) update_post_meta( $pid, '_download_expiry', esc_attr( $_download_expiry ) );
+		}							
 
 		// Do action for product type
 		do_action( 'woocommerce_process_product_meta_' . $product_type, $pid );
@@ -789,5 +833,11 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		}
 	}
 		
-	
+	function keep_custom_fields($existing_meta_keys, $options, $meta_key){
+
+		$keep_custom_fields_specific = ( ! $options['keep_custom_fields'] and ! empty($options['keep_custom_fields_specific'])) ? array_map('trim', explode(',', $options['keep_custom_fields_specific'])) : array();
+
+		return (($options['keep_custom_fields'] and in_array($meta_key, $existing_meta_keys)) or (in_array($meta_key, $existing_meta_keys) and ! $options['keep_custom_fields'] and in_array($meta_key, $keep_custom_fields_specific))) ? false : true;
+
+	}
 }
