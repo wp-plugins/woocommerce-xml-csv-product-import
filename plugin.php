@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: Free edition. An extremely easy, drag & drop importer to import WooCommerce simple products. Works with WP All Import free or paid editions. 
-Version: 0.9
+Version: 1.0
 Author: Soflyy
 */
 /**
