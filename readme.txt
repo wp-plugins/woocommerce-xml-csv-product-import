@@ -11,7 +11,7 @@ Easily import products from any XML or CSV file to WooCommerce with the WooComme
 
 == Description ==
 
-**Bulk import your products to WooCommerce in less than 10 minutes with the WooCommerce add-on.**
+**Bulk import your products to WooCommerce in less than 10 minutes with the WooCommerce add-on for WP All Import.**
 
 The left side of the plugin looks just like WooCommerce, and the right side displays a product from your XML/CSV file. 
 
@@ -22,7 +22,7 @@ It is so intuitive it is almost like manually adding a product in WooCommerce.
 Why use the WooCommerce add-on for WP All Import?
 
  - Supports files in any format and structure. There are no requirements that the data in your file be organized in a certain way.
- - Supports files of practically unlimited size by automatically splitting them into chunks. Import 100Mb+ product catalogs with ease, even on shared hosting. 
+ - Supports files of practically unlimited size by automatically splitting them into chunks. Import 200Mb+ product catalogs with ease, even on shared hosting. 
 
 [youtube http://www.youtube.com/watch?v=7xL4RGT-JRc]
 *demo video shows some pro version only features*
@@ -72,8 +72,11 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 * Added SKU auto generation options;
 * Updated parsing price, now plugin will delect price correctly even it present with currency symbol, like $100.20
 
+= 1.0 =
+* Official release on WP.org. Enhanced session handling.
+
 = 0.9 =
-* Initial release.
+* Initial release on WP.org.
 
 == Support ==
 
@@ -84,4 +87,3 @@ We do try to handle support for our free version users at the following e-mail a
 E-mail: support@soflyy.com
 
 Support for free version customers is not guaranteed and based on ability. For premium support, [purchase WP All Import and the WooCommerce add-on.](http://www.wpallimport.com/upgrade-to-pro)
-
