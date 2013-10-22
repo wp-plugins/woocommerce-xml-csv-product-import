@@ -75,7 +75,9 @@
 
 		if ($('input[name=is_product_manage_stock]:checked').val() == 'no') $('.stock_fields').hide(); else $('.stock_fields').show(); 
 		
-		if ($('#link_all_variations').is(':checked')) $('.variations_tab').hide(); else if (is_variable) $('.variations_tab').show();	
+		if ($('#link_all_variations').is(':checked')) $('.variations_tab').hide(); else if (is_variable) $('.variations_tab').show();			
+		
+		if ($('#xml_matching_parent').is(':checked') && is_variable) $('#variations_tag').show(); else $('#variations_tag').hide();
 
 		if ( ! is_simple ) {
 			$('.woocommerce_options_panel').find('input, select').attr('disabled','disabled'); 
@@ -85,8 +87,6 @@
 			$('.woocommerce_options_panel').find('input, select').removeAttr('disabled');
 			$('.upgrade_template').hide();
 		}
-		
-		if ($('#xml_matching_parent').is(':checked')) $('#variations_tag').show(); else $('#variations_tag').hide();
 	}
 
 	$('input[name=matching_parent]').click(function(){
@@ -94,7 +94,7 @@
 		if ($(this).val() == "xml") $('#variations_tag').show(); else $('#variations_tag').hide();
 
 	});
-	
+
 	change_depencies();
 
 	$('#product-type').change(function(){
@@ -150,7 +150,98 @@
 	$('#_variable_downloadable').click(function(){
 		if ($(this).is(':checked')) $('#variable_downloadable').show(); else $('#variable_downloadable').hide();
 	});	
-	
+
+	var variation_xpath = $('#variations_xpath').val();
+
+	$('#variations_xpath').blur(function(){
+		if (variation_xpath == ""){
+			$(this).val($(this).val().replace(/(\[\d\]})$/, '[*]'));			
+		}
+		variation_xpath = $(this).val();
+	});
+
+	$('#variations_xpath').mousemove(function(){
+		if (variation_xpath == ""){
+			$(this).val($(this).val().replace(/(\[\d\]})$/, '[*]}'));			
+		}
+		variation_xpath = $(this).val();
+	});
+
+	$('#variations_xpath').each(function () {
+
+		var $input = $('#variations_xpath');
+		var $xml = $('#variations_xml');		
+		var $next_element = $('#next_variation_element');
+		var $prev_element = $('#prev_variation_element');		
+		var $goto_element =  $('#goto_variation_element');
+		var $variation_tagno = 0;
+		// tag preview
+		$.fn.variation_tag = function () {
+			this.each(function () {
+				var $tag = $(this);
+				$tag.xml('dragable');
+				var tagno = parseInt($tag.find('input[name="tagno"]').val());
+				$tag.find('.navigation a').click(function () {
+					tagno += '#variation_prev' == $(this).attr('href') ? -1 : 1;
+					$tag.addClass('loading').css('opacity', 0.7);
+										
+					$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno}, function () {
+						var $indicator = $('<span />').insertBefore($tag);						
+						$xml.variation_tag();
+					});
+
+					$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno}, function (data) {
+						var $indicator = $('<span />').insertBefore($tag);
+						$tag.replaceWith(data);
+						$indicator.next().tag().prevObject.remove();
+					}, 'html');
+					return false;
+				});
+			});
+			return this;
+		};		
+			
+		var variationsXPathChanged = function () {
+			
+			if ($input.val() == $input.data('checkedValue')) return;					
+			
+			// request server to return elements which correspond to xpath entered
+			$input.attr('readonly', true).unbind('change', variationsXPathChanged).data('checkedValue', $input.val());
+			
+			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno}, function () {
+				$input.attr('readonly', false);			
+				$xml.xml('dragable');
+				if ($('.error').length){ 
+					$xml.html('');
+					$('#close_xml_tree').hide();
+				}
+				else $('#close_xml_tree').show();
+			});
+		};
+
+		$xml.find('.navigation a').live('click', function () {
+			$variation_tagno += '#variation_prev' == $(this).attr('href') ? -1 : 1;
+			$input.data('checkedValue', '');
+			variationsXPathChanged();
+		});
+
+		$('#variations_xpath').change(function(){$variation_tagno = 0; variationsXPathChanged();});	
+		
+		$('#variations_xpath').blur(function(){$variation_tagno = 0; variationsXPathChanged();});
+
+		$('#variations_xpath').keyup(function (e) {
+			if (13 == e.keyCode) {$variation_tagno = 0;  $(this).change();}
+		});
+
+		if ($input.val() != "")			
+			variationsXPathChanged();				
+
+		$('#variations_xpath').mousemove(function(){
+			variationsXPathChanged();				
+		});
+	});
+    
+
 	$('.variation_attributes, #woocommerce_attributes').find('label').live({
         mouseenter:
            function()
@@ -168,6 +259,14 @@
            }
     });
 
-	$('#variations_tag').insertAfter('.xpath_help');
+	$('#variations_tag').draggable({ containment: "#wpwrap", zIndex: 100 }).hide();	
 
+	$('#toggle_xml_tree').click(function(){
+		$('#variations_tag').show();
+	});	     
+
+	$('#close_xml_tree').click(function(){
+		$('#variations_tag').hide();
+	});
+	
 });})(jQuery);

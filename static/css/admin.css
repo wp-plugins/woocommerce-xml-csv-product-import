@@ -11,7 +11,7 @@
 }
 .pmxi_plugin .options_group{
 	padding-bottom: 10px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 .pmxi_plugin .options_group .input{
 	padding-left: 8px;
@@ -91,7 +91,7 @@
 .pmxi_plugin .variations_tag {	
 	background-color: #fff;	
 	/*position: fixed;	*/
-	margin-top: 45px;			
+	margin: 5px;			
 	border-top: 1px solid #DFDFDF;
 	-moz-border-radius-topleft: 4px;
 	-webkit-border-top-left-radius: 4px;
@@ -99,6 +99,9 @@
 	-moz-border-radius-topright: 4px;
 	-webkit-border-top-right-radius: 4px;
 	border-top-right-radius: 4px;
+	-webkit-box-shadow: 0px 0px 15px #ccc;
+	-moz-box-shadow:    0px 0px 15px #ccc;
+	box-shadow:         0px 0px 15px #ccc;
 }
 .pmxi_plugin .options .variations_tag{
 	margin-top: 0px;		
@@ -111,7 +114,7 @@
 		font-size: 12px;
 	}
 	.pmxi_plugin .variations_tag .xml {
-		max-height: 525px;
+		max-height: 300px;
 		overflow: auto;
 		border: 1px solid #DFDFDF;
 		border-top:none;
@@ -135,24 +138,71 @@
 
 @media screen and (max-height: 700px) {  
 	.pmxi_plugin .variations_tag {
-  		height:300px;
+  		max-height:300px;
   	}
   	.pmxi_plugin .variations_tag .xml {
   		max-height: 265px;
   	}
 }
-.use_parent{
+.pmxi_plugin .use_parent{
 	display: inline-block;	
 	position: relative;
 }
 
-#woocommerce_attributes label{
+.pmxi_plugin #woocommerce_attributes label{
 	font-size: 12px;
 	position: relative;
 	top:-2px;
 	left: 3px;
 }
 
-#variations_tag{
+.pmxi_plugin #variations_tag{
 	clear: both;	
+	position: fixed;
+	top:335px;
+	right:30%;	
+	width:300px;	
+	display: none;
+	z-index: 1;
+}
+.pmxi_plugin .variations_tag .title{
+	cursor: move;
+}
+.pmxi_plugin .variations_tag{
+	z-index: 999;
+}
+.pmxi_plugin .load_options{
+	float: right;
+	height: 0;
+	position: relative;
+	right: 10px;
+	top: -35px;
+}
+.pmxi_plugin  #dialog, .pmxi_plugin .ui-dialog{
+	padding: 0px;
+}
+.pmxi_plugin #variations_console{
+	margin: 0px 15px;
+}
+.pmxi_plugin #toggle_xml_tree{
+	margin: 0px 5px;
+}
+.pmxi_plugin #close_xml_tree{
+	display: block;
+	position: absolute;
+	top: -16px;
+	right: -10px;
+	background: url("../img/ico-remove.png") no-repeat scroll 0 0 transparent;
+	width:16px;
+	height:16px;
+
+}
+.pmxi_plugin #variable_product_options img{
+	margin: 4px;
+}
+.pmxi_plugin .highlight{
+	background: none repeat scroll 0 0 #CAD2DF;
+	padding: 5px;
+	margin-right: 20px;
+	text-align: center;
 }

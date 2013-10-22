@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: Free edition. An extremely easy, drag & drop importer to import WooCommerce simple products. Works with WP All Import free or paid editions. 
-Version: 1.0
+Version: 1.0.1
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_FREE_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.0');
+define('PMWI_FREE_VERSION', '1.0.1');
 
 define('PMWI_EDITION', 'free');
 
@@ -371,7 +371,7 @@ final class PMWI_Plugin {
 	/**
 	 * Plugin activation logic
 	 */
-	public function __activation() {
+	public function __activation() {		
 
 		// uncaught exception doesn't prevent plugin from being activated, therefore replace it with fatal error so it does
 		set_exception_handler(create_function('$e', 'trigger_error($e->getMessage(), E_USER_ERROR);'));
@@ -445,7 +445,10 @@ final class PMWI_Plugin {
 			'is_product_enable_reviews' => 'no',
 			'single_product_enable_reviews' => '',
 			'single_product_id' => '',
-			'single_product_parent_id' => '',			
+			'single_product_parent_id' => '',		
+			'single_product_id_first_is_parent_id' => '',
+			'single_product_id_first_is_parent_title' => '',
+			'single_product_id_first_is_variation' => '',	
 			'_virtual' => 0,
 			'_downloadable' => 0,
 			'is_regular_price_shedule' => 0,
@@ -509,7 +512,13 @@ final class PMWI_Plugin {
 			'single_variable_product_tax_class_use_parent' => 0,
 			'single_variable_product_downloadable_use_parent' => 0,
 			'variable_download_limit_use_parent' => 0,
-			'variable_download_expiry_use_parent' => 0
+			'variable_download_expiry_use_parent' => 0,
+			'first_is_parent' => 'yes',
+			'single_product_whosale_price' => '',
+			'variable_whosale_price' => '',
+			'variable_whosale_price_use_parent' => 0,
+			'disable_auto_sku_generation' => 0,
+			'is_default_attributes' => 1
 		);
 	}	
 }

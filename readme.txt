@@ -1,8 +1,8 @@
 === Import Products from any XML or CSV to WooCommerce ===
 Contributors: soflyy
 Requires at least: 3.5
-Tested up to: 3.5.2
-Stable tag: 1.0
+Tested up to: 3.7
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import
@@ -66,6 +66,12 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 
 == Changelog ==
 
+= 1.0.1 =
+* Fixed import product shipping class
+* Fixed import attributes;
+* Added SKU auto generation options;
+* Updated parsing price, now plugin will delect price correctly even it present with currency symbol, like $100.20
+
 = 1.0 =
 * Official release on WP.org. Enhanced session handling.
 
@@ -81,4 +87,3 @@ We do try to handle support for our free version users at the following e-mail a
 E-mail: support@soflyy.com
 
 Support for free version customers is not guaranteed and based on ability. For premium support, [purchase WP All Import and the WooCommerce add-on.](http://www.wpallimport.com/upgrade-to-pro)
-

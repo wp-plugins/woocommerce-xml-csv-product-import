@@ -44,17 +44,9 @@ abstract class PMWI_Controller_Admin extends PMWI_Controller {
 		
 
 		wp_enqueue_script('pmwi-script', PMWI_FREE_ROOT_URL . '/static/js/pmwi.js', array('jquery'));		
-		wp_enqueue_script('pmwi-admin-script', PMWI_FREE_ROOT_URL . '/static/js/admin.js', array('jquery', 'jquery-ui-dialog', 'jquery-ui-datepicker', 'jquery-ui-draggable', 'jquery-ui-droppable'));
+		wp_enqueue_script('pmwi-admin-script', PMWI_FREE_ROOT_URL . '/static/js/admin.js', array('jquery', 'jquery-ui-core', 'jquery-ui-resizable', 'jquery-ui-dialog', 'jquery-ui-datepicker', 'jquery-ui-draggable', 'jquery-ui-droppable', 'pmxi-admin-script'));
 		
 		global $woocommerce;
-
-		/*wp_enqueue_script('woocommerce_writepanel', $woocommerce->plugin_url() . '/assets/js/admin/write-panels.min.js', array('jquery', 'jquery-ui-datepicker'), $woocommerce->version);
-		wp_enqueue_script('jquery-ui-datepicker',  $woocommerce->plugin_url() . '/assets/js/admin/ui-datepicker.js', array('jquery','jquery-ui-core'), $woocommerce->version );
-		wp_enqueue_script('woocommerce_admin', $woocommerce->plugin_url() . '/assets/js/admin/woocommerce_admin.min.js', array('jquery', 'jquery-ui-widget', 'jquery-ui-core'), $woocommerce->version);
-		wp_enqueue_script('ajax-chosen', $woocommerce->plugin_url() . '/assets/js/chosen/ajax-chosen.jquery.min.js', array('jquery', 'chosen'), $woocommerce->version );
-		wp_enqueue_script('chosen', $woocommerce->plugin_url() . '/assets/js/chosen/chosen.jquery.min.js', array('jquery'), $woocommerce->version );
-		wp_enqueue_script('jquery-blockui', $woocommerce->plugin_url() . '/assets/js/jquery-blockui/jquery.blockUI.min.js', array( 'jquery' ), $woocommerce->version, true );
-		wp_enqueue_script('jquery-placeholder', $woocommerce->plugin_url() . '/assets/js/jquery-placeholder/jquery.placeholder.min.js', array( 'jquery' ), $woocommerce->version, true );*/
 
 		$woocommerce_witepanel_params = array(
 			'remove_item_notice' 			=> __("Remove this item? If you have previously reduced this item's stock, or this order was submitted by a customer, will need to manually restore the item's stock.", 'woocommerce'),

@@ -14,7 +14,7 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 
 		$default = PMWI_Plugin::get_default_import_options();
 
-		$id = $this->input->get('id');
+		$this->data['id'] = $id = $this->input->get('id');
 
 		$this->data['import'] = $import = new PMXI_Import_Record();			
 		if ( ! $id or $import->getById($id)->isEmpty()) { // specified import is not found
@@ -26,7 +26,7 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 			$post = $this->input->post(
 				$this->data['import']->options
 				+ $default			
-			);
+			);		
 
 		$this->data['is_loaded_template'] = PMXI_Plugin::$session->data['pmxi_import']['is_loaded_template'];
 
