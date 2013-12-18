@@ -2,8 +2,8 @@
 /*
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
-Description: Free edition. An extremely easy, drag & drop importer to import WooCommerce simple products. Works with WP All Import free or paid editions. 
-Version: 1.0.1
+Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
+Version: 1.1.0
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_FREE_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.0.1');
+define('PMWI_FREE_VERSION', '1.1.0');
 
 define('PMWI_EDITION', 'free');
 
@@ -34,6 +34,7 @@ define('PMWI_EDITION', 'free');
  * @singletone
  * @author Pavel Kulbakin <p.kulbakin@gmail.com>
  */
+
 final class PMWI_Plugin {
 	/**
 	 * Singletone instance
@@ -518,7 +519,14 @@ final class PMWI_Plugin {
 			'variable_whosale_price' => '',
 			'variable_whosale_price_use_parent' => 0,
 			'disable_auto_sku_generation' => 0,
-			'is_default_attributes' => 1
+			'is_default_attributes' => 1,
+			'disable_sku_matching' => 1,
+			
+			'is_update_attributes' => 1,
+			'update_attributes_logic' => 'full_update',						
+			'attributes_list' => array(),
+			'attributes_only_list' => array(),
+			'attributes_except_list' => array()
 		);
 	}	
 }

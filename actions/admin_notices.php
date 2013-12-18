@@ -31,6 +31,19 @@ function pmwi_admin_notices() {
 		
 	}
 
+	if ( class_exists( 'PMXI_Plugin' ) and ( version_compare(PMXI_VERSION, '3.3.3') <= 0 and PMXI_EDITION == 'paid' or version_compare(PMXI_VERSION, '3.1.0') < 0 and PMXI_EDITION == 'free') ) {
+		?>
+		<div class="error"><p>
+			<?php printf(
+					__('<b>%s Plugin</b>: Please update your WP All Import to the latest version', 'pmwi_plugin'),
+					PMWI_Plugin::getInstance()->getName()
+			) ?>
+		</p></div>
+		<?php
+		
+		deactivate_plugins( PMWI_FREE_ROOT_DIR . '/plugin.php');
+	}
+
 	$input = new PMWI_Input();
 	$messages = $input->get('PMWI_nt', array());
 	if ($messages) {

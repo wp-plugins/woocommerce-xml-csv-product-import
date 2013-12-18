@@ -175,22 +175,25 @@
 		var $prev_element = $('#prev_variation_element');		
 		var $goto_element =  $('#goto_variation_element');
 		var $variation_tagno = 0;
+		
 		// tag preview
-		$.fn.variation_tag = function () {
+		/*$.fn.variation_tag = function () {
 			this.each(function () {
 				var $tag = $(this);
 				$tag.xml('dragable');
 				var tagno = parseInt($tag.find('input[name="tagno"]').val());
+				var parent_tagno = parseInt($parent_tag.find('input[name="tagno"]').val());
+				console.log(parent_tagno);
 				$tag.find('.navigation a').click(function () {
 					tagno += '#variation_prev' == $(this).attr('href') ? -1 : 1;
 					$tag.addClass('loading').css('opacity', 0.7);
 										
-					$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno}, function () {
+					$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno, parent_tagno: parent_tagno}, function () {
 						var $indicator = $('<span />').insertBefore($tag);						
 						$xml.variation_tag();
 					});
 
-					$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno}, function (data) {
+					$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno, parent_tagno: parent_tagno}, function (data) {
 						var $indicator = $('<span />').insertBefore($tag);
 						$tag.replaceWith(data);
 						$indicator.next().tag().prevObject.remove();
@@ -199,7 +202,7 @@
 				});
 			});
 			return this;
-		};		
+		};	*/	
 			
 		var variationsXPathChanged = function () {
 			
@@ -208,7 +211,9 @@
 			// request server to return elements which correspond to xpath entered
 			$input.attr('readonly', true).unbind('change', variationsXPathChanged).data('checkedValue', $input.val());
 			
-			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno}, function () {
+			var parent_tagno = parseInt($('.tag').find('input[name="tagno"]').val());
+
+			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function () {
 				$input.attr('readonly', false);			
 				$xml.xml('dragable');
 				if ($('.error').length){ 
@@ -268,5 +273,21 @@
 	$('#close_xml_tree').click(function(){
 		$('#variations_tag').hide();
 	});
+
+	var $unique_key = $('input[name=unique_key]:first').val();
 	
+	$('.auto_generate_unique_key').click(function(){
+		
+		var attrs = new Array();
+		$('#attributes_table').find('textarea[name^=attribute_value]').each(function(){
+			if ("" != $(this).val() && $(this).val() != undefined) attrs.push($(this).val());
+		});
+		if (attrs.length){
+			$(this).parents('#product:first').find('input[name=unique_key]').val($unique_key + attrs.join('-'));
+			alert('The unique key has been successfully generated');
+		}
+		else
+			alert('At first, you should add minimum one attribute on the "Attributes" tab.');
+	});
+
 });})(jQuery);

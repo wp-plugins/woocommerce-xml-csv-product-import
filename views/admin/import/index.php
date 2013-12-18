@@ -59,6 +59,8 @@
 
 						<li class="options_tab advanced_options"><a title="Variations for variable products are defined here." href="javascript:void(0);" rel="add_on_options"><?php _e('Add-On Options', 'pmxi_plugin');?></a></li>
 
+						<?php do_action('pmwi_tab_header'); ?>
+
 					</ul>
 
 					<div class="panel woocommerce_options_panel" id="general_product_data">
@@ -490,7 +492,7 @@
 											<tr class="form-field">
 												<td><input type="text" name="attribute_name[]"  value="<?php echo esc_attr($name) ?>" style="width:100%;"/></td>
 												<td>
-													<textarea name="attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo esc_html($post['attribute_value'][$i]) ?></textarea>
+													<textarea name="attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo str_replace("&amp;","&", htmlentities(htmlentities($post['attribute_value'][$i]))); ?></textarea>
 													<br>
 													<span class='in_variations'>													
 														<input type="checkbox" name="in_variations[]" id="in_variations_<?php echo $i; ?>" <?php echo ($post['in_variations'][$i]) ? 'checked="checked"' : ''; ?> style="width: auto; position: relative; top: 1px; left: 0px;" value="1"/>
@@ -684,7 +686,7 @@
 						</p>
 						<div class="options_group" style="padding-bottom:0px;">
 							<div class="input" style="padding-bottom:10px;">																								
-								<input type="radio" id="auto_matching_parent" class="switcher" name="matching_parent" value="auto" <?php echo 'auto' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="auto_matching_parent" class="switcher" name="matching_parent" value="auto" <?php echo 'auto' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="auto_matching_parent" style="width:95%"><?php _e('All my variable products have SKUs or some other unique identifier. Each variation is linked to its parent with its parent\'s SKU or other unique identifier.', 'pmxi_plugin' )?></label><br>
 								<div class="switcher-target-auto_matching_parent"  style="padding-left:17px;">									
 									<p class="form-field">
@@ -697,7 +699,7 @@
 										<input type="text" class="short" placeholder="" name="single_product_parent_id" value="<?php echo esc_attr($post['single_product_parent_id']) ?>"/>
 										<a href="#help" class="help" title="<?php _e('Parent SKU column in the below example.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 									</p>
-									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/variations-data/data-example-1.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
+									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/wp-content/uploads/2013/12/data-example-1.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
 									<img src="<?php echo PMWI_FREE_ROOT_URL; ?>/static/img/data-example-1.png"/>
 									<p class="highlight">
 										<strong><?php _e("Important: Your Unique Key must be unique for each variation.","pmxi_plugin");?></strong> <a href="#help" class="help" title="<?php _e('If each variation doesn’t have a unique ID/SKU, it is recommended that you construct your Unique Key using your variation attribute values. You can set your Unique Key at the top of the Record Matching section below.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
@@ -707,7 +709,7 @@
 									<?php endif; ?>
 								</div>
 								<div class="clear" style="margin-top:5px;"></div>
-								<input type="radio" id="auto_matching_parent_first_is_parent_id" class="switcher" name="matching_parent" value="first_is_parent_id" <?php echo 'first_is_parent_id' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="auto_matching_parent_first_is_parent_id" class="switcher" name="matching_parent" value="first_is_parent_id" <?php echo 'first_is_parent_id' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="auto_matching_parent_first_is_parent_id" style="width:95%"><?php _e('All products with variations are grouped with a unique identifier that is the same for each variation and unique for each product.', 'pmxi_plugin' )?></label><br>
 								<div class="switcher-target-auto_matching_parent_first_is_parent_id"  style="padding-left:17px;">									
 									<p class="form-field">
@@ -715,7 +717,7 @@
 										<input type="text" class="short" placeholder="" name="single_product_id_first_is_parent_id" value="<?php echo esc_attr($post['single_product_id_first_is_parent_id']) ?>"/>
 										<a href="#help" class="help" title="<?php _e('Group ID column in the below example.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 									</p>										
-									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/variations-data/data-example-2.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
+									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/wp-content/uploads/2013/12/data-example-2.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
 									<img src="<?php echo PMWI_FREE_ROOT_URL; ?>/static/img/data-example-2.png"/>
 									<p class="highlight"><strong><?php _e("Important: Your Unique Key must be unique for each variation.","pmxi_plugin");?></strong> <a href="#help" class="help" title="<?php _e('If each variation doesn’t have a unique ID/SKU, it is recommended that you construct your Unique Key using your variation attribute values. You can set your Unique Key at the top of the Record Matching section below.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a></p>
 									<?php if ( ! $id ): ?>
@@ -723,14 +725,14 @@
 									<?php endif; ?>
 								</div>
 								<div class="clear" style="margin-top:5px;"></div>
-								<input type="radio" id="auto_matching_parent_first_is_parent_title" class="switcher" name="matching_parent" value="first_is_parent_title" <?php echo 'first_is_parent_title' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="auto_matching_parent_first_is_parent_title" class="switcher" name="matching_parent" value="first_is_parent_title" <?php echo 'first_is_parent_title' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="auto_matching_parent_first_is_parent_title"><?php _e('All variations for a particular product have the same title as the parent product.', 'pmxi_plugin' )?></label><br>
 								<div class="switcher-target-auto_matching_parent_first_is_parent_title"  style="padding-left:17px;">									
 									<p class="form-field">
 										<label style="width:75px;"><?php _e("Product Title", "pmxi_plugin"); ?></label> 
 										<input type="text" class="short" placeholder="" name="single_product_id_first_is_parent_title" value="<?php echo ($post['single_product_id_first_is_parent_title']) ? esc_attr($post['single_product_id_first_is_parent_title']) : ((!empty(PMXI_Plugin::$session->data['pmxi_import']['template']['title'])) ? esc_attr(PMXI_Plugin::$session->data['pmxi_import']['template']['title']) : ''); ?>"/>
 									</p>
-									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/variations-data/data-example-3.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
+									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/wp-content/uploads/2013/12/data-example-3.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
 									<img src="<?php echo PMWI_FREE_ROOT_URL; ?>/static/img/data-example-3.png"/>
 									<p class="highlight"><strong><?php _e("Important: Your Unique Key must be unique for each variation.","pmxi_plugin");?></strong> <a href="#help" class="help" title="<?php _e('If each variation doesn’t have a unique ID/SKU, it is recommended that you construct your Unique Key using your variation attribute values. You can set your Unique Key at the top of the Record Matching section below.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a></p>
 									<?php if ( ! $id ): ?>
@@ -738,14 +740,14 @@
 									<?php endif; ?>
 								</div>	
 								<div class="clear" style="margin-top:5px;"></div>
-								<input type="radio" id="auto_matching_parent_first_is_variation" class="switcher" name="matching_parent" value="first_is_variation" <?php echo 'first_is_variation' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="auto_matching_parent_first_is_variation" class="switcher" name="matching_parent" value="first_is_variation" <?php echo 'first_is_variation' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="auto_matching_parent_first_is_variation"><?php _e('All variations for a particular product have the same title. There are no parent products.', 'pmxi_plugin' )?></label><br>
 								<div class="switcher-target-auto_matching_parent_first_is_variation"  style="padding-left:17px;">									
 									<p class="form-field">
 										<label style="width:75px;"><?php _e("Product Title"); ?></label> 
 										<input type="text" class="short" placeholder="" name="single_product_id_first_is_variation" value="<?php echo ($post['single_product_id_first_is_variation']) ? esc_attr($post['single_product_id_first_is_variation']) : ((!empty(PMXI_Plugin::$session->data['pmxi_import']['template']['title'])) ? esc_attr(PMXI_Plugin::$session->data['pmxi_import']['template']['title']) : ''); ?>"/>
 									</p>
-									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/variations-data/data-example-4.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
+									<p><strong><?php _e("Example Data For Use With This Option","pmxi_plugin");?> </strong> - <a href="http://www.wpallimport.com/wp-content/uploads/2013/12/data-example-4.csv" tatger="_blank"><?php _e("download","pmxi_plugin");?></a></p>
 									<img src="<?php echo PMWI_FREE_ROOT_URL; ?>/static/img/data-example-4.png"/>
 									<p class="highlight"><strong><?php _e("Important: Your Unique Key must be unique for each variation.","pmxi_plugin");?></strong> <a href="#help" class="help" title="<?php _e('If each variation doesn’t have a unique ID/SKU, it is recommended that you construct your Unique Key using your variation attribute values. You can set your Unique Key at the top of the Record Matching section below.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a></p>
 									<?php if ( ! $id ): ?>
@@ -754,7 +756,7 @@
 								</div>																
 								<div class="clear" style="margin-top:5px;"></div>
 
-								<input type="radio" id="xml_matching_parent" class="switcher" name="matching_parent" value="xml" <?php echo 'xml' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="xml_matching_parent" class="switcher" name="matching_parent" value="xml" <?php echo 'xml' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="xml_matching_parent"><?php _e('I\'m importing XML and my variations are child XML elements', 'pmxi_plugin' )?> </label>
 								<a href="#help" class="help" title="<?php _e('This allows you to set variations that are stored as children XML elements.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 								<div class="switcher-target-xml_matching_parent" style="padding-left:17px; position:relative;">
@@ -1052,7 +1054,7 @@
 														<label for="variable_product_enabled_xpath"><?php _e('Set with XPath', 'pmxi_plugin' )?></label><br>
 														<div class="switcher-target-variable_product_enabled_xpath set_with_xpath">
 															<div class="input">
-																<input type="text" class="smaller-text" name="single_variable_product_enabled" style="width:300px;" value="<?php echo esc_attr($post['single_variable_product_enabled']) ?>"/>
+																<input type="text" class="smaller-text" name="single_variable_product_enabled" style="width:300px; " value="<?php echo esc_attr($post['single_variable_product_enabled']) ?>"/>
 																<a href="#help" class="help" title="<?php _e('The value of presented XPath should be one of the following: (\'yes\', \'no\').', 'pmxi_plugin') ?>" style="position:relative; top:2px;">?</a>
 															</div>
 														</div>
@@ -1079,7 +1081,7 @@
 																<?php foreach ($post['variable_attribute_name'] as $i => $name): if ("" == $name) continue; ?>
 																	<tr class="form-field">
 																		<td><input type="text" name="variable_attribute_name[]"  value="<?php echo esc_attr($name) ?>" style="width:95% !important;"/></td>
-																		<td><textarea name="variable_attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo esc_html($post['variable_attribute_value'][$i]) ?></textarea>
+																		<td><textarea name="variable_attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo str_replace("&amp;","&", htmlentities(htmlentities($post['variable_attribute_value'][$i]))); ?></textarea>
 																		<br>
 																		<span class='in_variations' style="margin-left:0px;">
 																			<input type="checkbox" name="variable_in_variations[]" id="variable_in_variations_<?php echo $i; ?>" <?php echo ($post['variable_in_variations'][$i]) ? 'checked="checked"' : ''; ?> style="width: auto; position: relative; top: 1px; left: 0px;" value="1"/>
@@ -1181,7 +1183,7 @@
 								
 								<div class="clear" style="margin-top:5px;"></div>
 
-								<input type="radio" id="manual_matching_parent" class="switcher" name="matching_parent" value="manual" <?php echo 'manual' == $post['matching_parent'] ? 'checked="checked"': '' ?>/>
+								<input type="radio" id="manual_matching_parent" class="switcher" name="matching_parent" value="manual" <?php echo 'manual' == $post['matching_parent'] ? 'checked="checked"': '' ?> style="float:left;"/>
 								<label for="manual_matching_parent"><?php _e('I\'m an advanced user and will match my variations with my parent products manually. (Advanced)', 'pmxi_plugin' )?></label>
 								<a href="#help" class="help" title="<?php _e('This allows you to match products as you would in the Manual Record Matching section of WP All Import.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 								<div class="switcher-target-manual_matching_parent" style="padding-left:17px;">
@@ -1202,7 +1204,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="options_group">							
+						<div class="options_group">
 							<p class="form-field"><?php _e('Variable Enabled','pmxi_plugin');?></p>
 							<div class="input" style="margin-top:-10px;">
 								<div class="input fleft">
@@ -1239,6 +1241,7 @@
 						</div>
 					</div><!-- End Product Panel -->
 
+					<?php do_action('pmwi_tab_content'); ?>
 
 					<!-- OPTIONS -->
 
@@ -1259,6 +1262,12 @@
 								<input type="checkbox" id="disable_auto_sku_generation" name="disable_auto_sku_generation" value="1" <?php echo $post['disable_auto_sku_generation'] ? 'checked="checked"' : '' ?> />
 								<label for="disable_auto_sku_generation"><?php _e('Disable auto SKU generation', 'pmxi_plugin') ?></label>
 								<a href="#help" class="help" title="<?php _e('Plugin will NOT automaticaly generate the SKU for each product based on md5 algorithm, if SKU option is empty.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
+							</div>
+							<div class="input" style="padding-left:20px;">
+								<input type="hidden" name="disable_sku_matching" value="0" />
+								<input type="checkbox" id="disable_sku_matching" name="disable_sku_matching" value="1" <?php echo $post['disable_sku_matching'] ? 'checked="checked"' : '' ?> />
+								<label for="disable_sku_matching"><?php _e('Disable SKU matching', 'pmxi_plugin') ?></label>
+								<a href="#help" class="help" title="<?php _e('Plugin will NOT search matches for SKU. This option will speed up import process.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 							</div>
 						</div>
 					</div>
