@@ -11,6 +11,9 @@ Easily import products from any XML or CSV file to WooCommerce with the WooComme
 
 == Description ==
 
+*“I've been doing eCommerce sites for almost a decade. The combination of WP All Import and WooCommerce is a game changer! I can now get clients into eCommerce sites that could never afford the time/energy or money it took to administrate a site. It has opened up a whole new client base for me.”*  
+** Mike Tidmore** -Founder, Successful Online Stores
+
 **Bulk import your products to WooCommerce in less than 10 minutes with the WooCommerce add-on for WP All Import.**
 
 The left side of the plugin looks just like WooCommerce, and the right side displays a product from your XML/CSV file. 
