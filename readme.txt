@@ -12,7 +12,7 @@ Easily import products from any XML or CSV file to WooCommerce with the WooComme
 == Description ==
 
 *“I've been doing eCommerce sites for almost a decade. The combination of WP All Import and WooCommerce is a game changer! I can now get clients into eCommerce sites that could never afford the time/energy or money it took to administrate a site. It has opened up a whole new client base for me.”*  
-** Mike Tidmore** -Founder, Successful Online Stores
+**Mike Tidmore** -Founder, Successful Online Stores
 
 **Bulk import your products to WooCommerce in less than 10 minutes with the WooCommerce add-on for WP All Import.**
 
@@ -34,7 +34,7 @@ Upgrade to the professional edition of **WP All Import + the WooCommerce add-on*
 
 * Import External/Affiliate products, Grouped products, and Variable products.
 
-* Import files from a URL or FTP server - Download and import files from external websites or FTP servers, even if they are password protected. FTP imports support wildcard patterns, i.e. *.xml, so for example you could download and import all XML files in a certain folder.
+* Import files from a URL - Download and import files from external websites, even if they are password protected with HTTP authentication. 
 
 * Cron Job/Recurring Imports - WP All Import pro can check periodically check a file for updates, and add, edit, delete, and update the stock status of the imported products accordingly.
 
