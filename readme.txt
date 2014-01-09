@@ -2,7 +2,7 @@
 Contributors: soflyy
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import
@@ -65,6 +65,10 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 1. The WooCommerce add-on.
 
 == Changelog ==
+
+= 1.1.1 =
+* Compatibility with WooCommerce 2.1
+* CSS fixes
 
 = 1.1.0 =
 * Compatibility with WP 3.8

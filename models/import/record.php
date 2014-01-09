@@ -556,7 +556,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 						 	if ( ! taxonomy_exists( $woocommerce->attribute_taxonomy_name( $attr_name ) ) and intval($attr_data['is_create_taxonomy_terms'][$i])) {
 
 						 		// Grab the submitted data
-								$attribute_name    = ( isset( $attr_name ) ) ? woocommerce_sanitize_taxonomy_name( stripslashes( (string) $attr_name ) ) : '';
+								$attribute_name    = ( isset( $attr_name ) ) ? pmwi_sanitize_taxonomy_name( stripslashes( (string) $attr_name ) ) : '';
 								$attribute_label   = ucwords( stripslashes( (string) $attr_name ));
 								$attribute_type    = 'select';
 								$attribute_orderby = 'menu_order';
