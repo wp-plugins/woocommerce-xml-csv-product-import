@@ -11,7 +11,10 @@ Easily import products from any XML or CSV file to WooCommerce with the WooComme
 
 == Description ==
 
-**Bulk import your products to WooCommerce in less than 10 minutes with the WooCommerce add-on for WP All Import.**
+*“I've been doing eCommerce sites for almost a decade. The combination of WP All Import and WooCommerce is a game changer! I can now get clients into eCommerce sites that could never afford the time/energy or money it took to administrate a site. It has opened up a whole new client base for me.”*  
+**Mike Tidmore** -Founder, Successful Online Stores
+
+The WooCommerce add-on for [WP All Import](http://wordpress.org/plugins/wp-all-import/) makes it easy to bulk import your products to WooCommerce in less than 10 minutes.
 
 The left side of the plugin looks just like WooCommerce, and the right side displays a product from your XML/CSV file. 
 
@@ -24,14 +27,18 @@ Why use the WooCommerce add-on for WP All Import?
  - Supports files in any format and structure. There are no requirements that the data in your file be organized in a certain way.
  - Supports files of practically unlimited size by automatically splitting them into chunks. Import 200Mb+ product catalogs with ease, even on shared hosting. 
 
+= WooCommerce Add-On Professional Edition =
 [youtube http://www.youtube.com/watch?v=7xL4RGT-JRc]
-*demo video shows some pro version only features*
 
-Upgrade to the professional edition of **WP All Import + the WooCommerce add-on** to: 
+The professional edition of *WP All Import + the WooCommerce add-on* is a paid upgrade that includes premium support and adds the following features:
 
-* Import External/Affiliate products, Grouped products, and Variable products.
+* [In-depth support for Variable products](http://www.wpallimport.com/documentation/woocommerce/variable-products/) - example CSV files, ability to import variations from properly formatted XML, and much more.
 
-* Import files from a URL or FTP server - Download and import files from external websites or FTP servers, even if they are password protected. FTP imports support wildcard patterns, i.e. *.xml, so for example you could download and import all XML files in a certain folder.
+* Import External/Affiliate products
+
+* Import Grouped products
+
+* Import files from a URL - Download and import files from external websites, even if they are password protected with HTTP authentication. 
 
 * Cron Job/Recurring Imports - WP All Import pro can check periodically check a file for updates, and add, edit, delete, and update the stock status of the imported products accordingly.
 
