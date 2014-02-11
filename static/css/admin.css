@@ -25,6 +25,13 @@
 	position: relative;
 	top: -2px;
 	width: auto;
+	margin-left: 0;
+}
+.pmxi_plugin .woocommerce_options_panel label, .pmxi_plugin .woocommerce_options_panel legend{
+	margin: 0;
+}
+.pmxi_plugin .woocommerce_options_panel p.form-field{
+	padding-left: 20px !important;
 }
 .pmxi_plugin #woocommerce-product-data{
 	overflow: hidden;	

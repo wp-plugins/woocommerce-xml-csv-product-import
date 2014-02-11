@@ -1260,6 +1260,14 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 	}
 	
 	function prepare_price( $price ){
-		return preg_replace("/[^0-9\.,]/","",$price);
+		$price = preg_replace("/[^0-9\.,]/","", $price);
+		
+		if ( preg_match("%^[0-9,]+(\.[0-9]{2})?$%", $price)) {
+			return str_replace(",", "", $price);
+		}
+		if ( preg_match("%^[0-9.]+(\,[0-9]{2})?$%", $price)) {
+			return str_replace(",", ".", str_replace(".", "", $price));
+		}
+		return $price;
 	}
 }
