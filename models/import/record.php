@@ -1259,15 +1259,20 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		
 	}
 	
-	function prepare_price( $price ){
-		$price = preg_replace("/[^0-9\.,]/","", $price);
-		
-		if ( preg_match("%^[0-9,]+(\.[0-9]{2})?$%", $price)) {
-			return str_replace(",", "", $price);
-		}
-		if ( preg_match("%^[0-9.]+(\,[0-9]{2})?$%", $price)) {
-			return str_replace(",", ".", str_replace(".", "", $price));
-		}
-		return $price;
+	function prepare_price( $price ){   
+
+	    $price = preg_replace("/[^0-9\.,]/","", $price);                
+
+	    if ( preg_match("%^[0-9,]+(\.[0-9]{1,}){1}$%", $price)) {
+	        $price =  str_replace(",", "", $price);
+	    }
+	    elseif ( preg_match("%^[0-9\.]+(\,[0-9]{1,}){1}$%", $price)) {
+	        $price =  str_replace(",", ".", str_replace(".", "", $price));
+	    }
+	    else{
+	        $price = str_replace(",", ".", $price);
+	    }    
+
+	    return number_format($price, 2, '.', '');
 	}
 }
