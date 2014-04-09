@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
-Version: 1.1.3
+Version: 1.1.4
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_FREE_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.1.3');
+define('PMWI_FREE_VERSION', '1.1.4');
 
 define('PMWI_EDITION', 'free');
 
@@ -212,6 +212,7 @@ final class PMWI_Plugin {
 		// register admin page pre-dispatcher
 		add_action('admin_init', array($this, '__adminInit'));		
 
+
 	}
 
 	/**
@@ -222,7 +223,7 @@ final class PMWI_Plugin {
 		$page = strtolower($input->getpost('page', ''));
 		if (preg_match('%^' . preg_quote(str_replace('_', '-', self::PREFIX), '%') . '([\w-]+)$%', $page)) {
 			$this->adminDispatcher($page, strtolower($input->getpost('action', 'index')));
-		}
+		}			
 	}
 
 	/**
@@ -414,8 +415,10 @@ final class PMWI_Plugin {
 			'single_product_regular_price' => '',
 			'single_product_sale_price' => '',
 			'single_product_files' => '',
+			'single_product_files_names' => '',
 			'single_product_download_limit' => '',
 			'single_product_download_expiry' => '',
+			'single_product_download_type' => '',
 			'is_multiple_product_tax_status' => 'yes',
 			'multiple_product_tax_status' => 'none',
 			'single_product_tax_status' => '',
@@ -438,6 +441,9 @@ final class PMWI_Plugin {
 			'is_multiple_product_shipping_class' => 'yes',
 			'multiple_product_shipping_class' => '',
 			'single_product_shipping_class' => '',
+			'is_multiple_grouping_product' => 'yes',
+			'multiple_grouping_product' => '',
+			'single_grouping_product' => '',
 			'single_product_up_sells' => '',
 			'single_product_cross_sells' => '',
 			'attribute_name' => array(),
@@ -460,8 +466,8 @@ final class PMWI_Plugin {
 			'is_regular_price_shedule' => 0,
 			'single_sale_price_dates_from' => 'now',
 			'single_sale_price_dates_to' => 'now',
-			'product_files_delim' => ',',
-			'grouping_product' => '',
+			'product_files_delim' => ',',	
+			'product_files_names_delim' => ',',				
 			'matching_parent' => 'auto',
 			'parent_indicator' => 'custom field',
 			'custom_parent_indicator_name' => '',
@@ -483,6 +489,7 @@ final class PMWI_Plugin {
 			'variable_shipping_class' => '',
 			'variable_tax_class' => '',
 			'variable_file_paths' => '',
+			'variable_file_names' => '',
 			'variable_download_limit' => '',
 			'variable_download_expiry' => '',
 			'is_variable_product_virtual' => 'no',
@@ -501,6 +508,7 @@ final class PMWI_Plugin {
 			'variable_is_taxonomy' => array(),	
 			'variable_create_taxonomy_in_not_exists' => array(),		
 			'variable_product_files_delim' => ',',
+			'variable_product_files_names_delim' => ',',
 			'variable_image' => '',
 			'variable_sku' => '',
 			'is_variable_product_enabled' => 'yes',
@@ -511,6 +519,7 @@ final class PMWI_Plugin {
 			'variable_sale_price_use_parent' => 0,
 			'variable_sale_dates_use_parent' => 0,
 			'variable_weight_use_parent' => 0,
+			'single_variable_product_virtual' => '',
 			'single_variable_product_virtual_use_parent' => 0,
 			'variable_dimensions_use_parent' => 0,
 			'variable_image_use_parent' => 0,
@@ -526,6 +535,11 @@ final class PMWI_Plugin {
 			'disable_auto_sku_generation' => 0,
 			'is_default_attributes' => 1,
 			'disable_sku_matching' => 1,
+			'disable_prepare_price' => 0,
+			'grouping_indicator' => 'xpath',				
+			'custom_grouping_indicator_name' => '',
+			'custom_grouping_indicator_value' => '',
+			'is_update_product_type' => 1,
 			
 			'is_update_attributes' => 1,
 			'update_attributes_logic' => 'full_update',						
@@ -536,4 +550,5 @@ final class PMWI_Plugin {
 	}	
 }
 
-PMWI_Plugin::getInstance();
+PMWI_Plugin::getInstance();		
+

@@ -30,8 +30,14 @@
 						</div>
 					</div>
 					<div style="float:right;">
-						<label class="show_if_simple" for="_virtual" style="border-right:none;"><?php _e('Virtual','woocommerce');?>: <input type="checkbox" id="_virtual" name="_virtual" <?php echo ($post['_virtual']) ? 'checked="checked"' : ''; ?>></label>
-						<label class="show_if_simple" for="_downloadable"><?php _e('Downloadable','woocommerce');?>: <input type="checkbox" id="_downloadable" name="_downloadable" <?php echo ($post['_downloadable']) ? 'checked="checked"' : ''; ?>></label>
+						<label class="show_if_simple" for="_virtual" style="border-right:none;">
+							<input type="hidden" name="_virtual" value="0"/>
+							<?php _e('Virtual','woocommerce');?>: <input type="checkbox" id="_virtual" name="_virtual" <?php echo ($post['_virtual']) ? 'checked="checked"' : ''; ?>>
+						</label>
+						<label class="show_if_simple" for="_downloadable">
+							<input type="hidden" name="_downloadable" value="0"/>
+							<?php _e('Downloadable','woocommerce');?>: <input type="checkbox" id="_downloadable" name="_downloadable" <?php echo ($post['_downloadable']) ? 'checked="checked"' : ''; ?>>
+						</label>
 					</div>
 				</span>
 			</h3>
@@ -166,6 +172,12 @@
 								<a href="#help" class="help" title="<?php _e('File paths/URLs, comma separated. The delimiter is used when an XML element contains multiple URLs/paths - i.e. <code>http://files.com/1.doc, http://files.com/2.doc</code>.', 'pmxi_plugin') ?>">?</a>
 							</p>
 							<p class="form-field">
+								<label><?php _e("File names"); ?></label>
+								<input type="text" class="short" name="single_product_files_names" value="<?php echo esc_attr($post['single_product_files_names']) ?>" style="margin-right:5px;"/>
+								<input type="text" class="small" name="product_files_names_delim" value="<?php echo esc_attr($post['product_files_names_delim']) ?>" style="width:5%; text-align:center;"/>
+								<a href="#help" class="help" title="<?php _e('File names, comma separated. The delimiter is used when an XML element contains multiple names - i.e. <code>1.doc, 2.doc</code>.', 'pmxi_plugin') ?>">?</a>
+							</p>
+							<p class="form-field">
 								<label><?php _e("Download Limit"); ?></label>
 								<input type="text" class="short" placeholder="Unimited" name="single_product_download_limit" value="<?php echo esc_attr($post['single_product_download_limit']) ?>"/>&nbsp;
 								<?php _e( 'Leave blank for unlimited re-downloads.', 'woocommerce' ) ?>
@@ -174,6 +186,11 @@
 								<label><?php _e("Download Expiry"); ?></label>
 								<input type="text" class="short" placeholder="Never" name="single_product_download_expiry" value="<?php echo esc_attr($post['single_product_download_expiry']) ?>"/>&nbsp;
 								<?php _e( 'Enter the number of days before a download link expires, or leave blank.', 'woocommerce' ) ?>
+							</p>
+							<p class="form-field">
+								<label><?php _e("Download Type"); ?></label>
+								<input type="text" class="short" placeholder="Standard Product" name="single_product_download_type" value="<?php echo esc_attr($post['single_product_download_type']) ?>"/>&nbsp;
+								<a href="#help" class="help" title="<?php _e('The value of presented XPath should be one of the following: (\'application\', \'music\').', 'pmxi_plugin') ?>" style="position:relative; top:2px;">?</a>
 							</p>
 						</div>
 						<div class="options_group show_if_simple show_if_external show_if_variable">
@@ -455,19 +472,64 @@
 								}
 							}
 							?>
-							<p class="form-field">
-								<label><?php _e("Grouping", "woocommerce"); ?></label>
-								<select name="grouping_product">
-									<?php
-									foreach ($post_parents as $parent_id => $parent_title) {
-										?>
-										<option value="<?php echo $parent_id; ?>" <?php if ($parent_id == $post['grouping_product']):?>selected="selected"<?php endif;?>><?php echo $parent_title;?></option>
-										<?php
-									}
-									?>
-								</select>
-								<a href="#help" class="help" title="<?php _e('Set this option to make this product part of a grouped product.', 'woocommerce'); ?>">?</a>
-							</p>
+							
+							<div class="input">
+								<div class="main_choise">
+									<input type="radio" id="multiple_grouping_product_yes" class="switcher" name="is_multiple_grouping_product" value="yes" <?php echo 'no' != $post['is_multiple_grouping_product'] ? 'checked="checked"': '' ?>/>
+									<label for="multiple_grouping_product_yes"><?php _e("Grouping"); ?></label>
+								</div>
+								<div class="switcher-target-multiple_grouping_product_yes"  style="padding-left:17px;">
+									<div class="input">
+										<select name="multiple_grouping_product">
+											<?php
+											foreach ($post_parents as $parent_id => $parent_title) {
+												?>
+												<option value="<?php echo $parent_id; ?>" <?php if ($parent_id == $post['multiple_grouping_product']):?>selected="selected"<?php endif;?>><?php echo $parent_title;?></option>
+												<?php
+											}
+											?>
+										</select>
+										<a href="#help" class="help" title="<?php _e('Set this option to make this product part of a grouped product.', 'woocommerce'); ?>">?</a>
+									</div>
+								</div>
+							</div>
+							<div class="input">									
+								<div class="main_choise">
+									<input type="radio" id="multiple_grouping_product_no" class="switcher" name="is_multiple_grouping_product" value="no" <?php echo 'no' == $post['is_multiple_grouping_product'] ? 'checked="checked"': '' ?>/>
+									<label for="multiple_grouping_product_no"><?php _e('Manual matching grouping product with', 'pmxi_plugin' )?></label>
+								</div>
+								
+								<div class="switcher-target-multiple_grouping_product_no"  style="padding-left:17px; clear:both;">
+									<div class="input">																						
+										<input type="radio" id="duplicate_indicator_xpath_grouping" class="switcher" name="grouping_indicator" value="xpath" <?php echo 'xpath' == $post['grouping_indicator'] ? 'checked="checked"': '' ?>/>
+										<label for="duplicate_indicator_xpath_grouping"><?php _e('xpath', 'pmxi_plugin' )?></label>
+										<span class="switcher-target-duplicate_indicator_xpath_grouping" style="vertical-align:middle" style="padding-left:17px;">												
+											<input type="text" name="single_grouping_product" value="<?php echo esc_attr($post['single_grouping_product']); ?>" style="float:none; margin:1px; margin-top:-3px;" />
+											<a href="#help" class="help" title="<?php _e('The value of presented XPath should be grouped product ID or Title).', 'pmxi_plugin') ?>">?</a>
+										</span>										
+									</div>
+
+									<div class="input">	
+										<input type="radio" id="duplicate_indicator_custom_field_grouping" class="switcher" name="grouping_indicator" value="custom field" <?php echo 'custom field' == $post['grouping_indicator'] ? 'checked="checked"': '' ?>/>
+										<label for="duplicate_indicator_custom_field_grouping"><?php _e('custom field', 'pmxi_plugin' )?></label><br>
+										<span class="switcher-target-duplicate_indicator_custom_field_grouping" style="vertical-align:middle" style="padding-left:17px;">
+											<div class="input">
+												<label><?php _e('Name', 'pmxi_plugin') ?></label>
+												<input type="text" name="custom_grouping_indicator_name" value="<?php echo esc_attr($post['custom_grouping_indicator_name']) ?>" style="float:none; margin:1px;" />
+											</div>
+											<div class="input">
+												<label><?php _e('Value', 'pmxi_plugin') ?></label>
+												<input type="text" name="custom_grouping_indicator_value" value="<?php echo esc_attr($post['custom_grouping_indicator_value']) ?>" style="float:none; margin:1px; margin-left:3px;" />
+											</div>
+										</span>
+
+
+										<!--input type="text" class="smaller-text" name="single_grouping_product" style="width:300px;" value="<?php echo esc_attr($post['single_grouping_product']) ?>"/>
+										<a href="#help" class="help" title="<?php _e('The value of presented XPath should be grouped product ID).', 'pmxi_plugin') ?>">?</a-->
+									</div>
+								</div>																			
+							</div>						
+							
 						</div>
 					</div><!-- End Product Panel -->
 
@@ -914,7 +976,7 @@
 															<div class="input">
 																<?php
 																	$classes = get_the_terms( 0, 'product_shipping_class' );
-																	if ( $classes && ! is_wp_error( $classes ) ) $current_shipping_class = current($classes)->term_id; else $current_shipping_class = '';
+																	if ( $classes && ! is_wp_error( $classes ) ) $current_shipping_class = current($classes)->term_id; else $current_shipping_class = '';																	
 
 																	$args = array(
 																		'taxonomy' 			=> 'product_shipping_class',
@@ -922,7 +984,7 @@
 																		'show_option_none' 	=> __( 'No shipping class', 'woocommerce' ),
 																		'name' 				=> 'multiple_variable_product_shipping_class',
 																		'id'				=> 'multiple_variable_product_shipping_class',
-																		'selected'			=> $current_shipping_class,
+																		'selected'			=> (!empty($post['multiple_variable_product_shipping_class'])) ? $post['multiple_variable_product_shipping_class'] : $current_shipping_class,
 																		'class'				=> 'select short'
 																	);
 
@@ -1016,6 +1078,12 @@
 													<input type="text" value="<?php echo esc_attr($post['variable_file_paths']) ?>" name="variable_file_paths" class="short" style="width:60% !important;">
 													<input type="text" class="small" name="variable_product_files_delim" value="<?php echo esc_attr($post['variable_product_files_delim']) ?>" style="width:5% !important;text-align:center; margin-left:5px;"/>
 													<a href="#help" class="help" title="<?php _e('File paths/URLs, comma separated. The delimiter option uses when xml element contains few paths/URLs (http://files.com/1.doc, http://files.com/2.doc).', 'pmxi_plugin') ?>">?</a>
+												</p>
+												<p class="form-field">
+													<label style="width:150px;"><?php _e("File names"); ?></label>
+													<input type="text" class="short" name="variable_file_names" value="<?php echo esc_attr($post['variable_file_names']) ?>" style="width:60% !important;"/>
+													<input type="text" class="small" name="variable_product_files_names_delim" value="<?php echo esc_attr($post['variable_product_files_names_delim']) ?>" style="width:5% !important;text-align:center; margin-left:5px;"/>
+													<a href="#help" class="help" title="<?php _e('File names, comma separated. The delimiter is used when an XML element contains multiple names - i.e. <code>1.doc, 2.doc</code>.', 'pmxi_plugin') ?>">?</a>
 												</p>
 												<p class="form-field">
 													<label style="width:150px;"><?php _e('Download Limit','woocommerce');?></label>
@@ -1168,9 +1236,9 @@
 											<div class="variations_tree">													
 												<div id="variations_xml">
 													<div class="variations_tag">
-														<input type="hidden" name="variations_tagno" value="<?php echo $tagno ?>" />
+														<input type="hidden" name="variations_tagno" value="<?php echo (!empty($tagno)) ? $tagno : 0; ?>" />
 														<div class="title">
-															<?php printf(__('No matching elements found for XPath expression specified', 'pmxi_plugin'), $tagno, $variation_list_count); ?>
+															<?php printf(__('No matching elements found for XPath expression specified', 'pmxi_plugin'), (!empty($tagno)) ? $tagno : 0, (!empty($variation_list_count)) ? $variation_list_count : 0); ?>
 														</div>
 														<div class="clear"></div>
 														<div class="xml resetable"></div>
@@ -1190,15 +1258,23 @@
 									<div class="input">
 										<input type="radio" id="duplicate_indicator_title_parent" class="switcher" name="parent_indicator" value="title" <?php echo 'title' == $post['parent_indicator'] ? 'checked="checked"': '' ?>/>
 										<label for="duplicate_indicator_title_parent"><?php _e('title', 'pmxi_plugin' )?>&nbsp;</label>
+									</div>
+									<div class="input">
 										<input type="radio" id="duplicate_indicator_content_parent" class="switcher" name="parent_indicator" value="content" <?php echo 'content' == $post['parent_indicator'] ? 'checked="checked"': '' ?>/>
 										<label for="duplicate_indicator_content_parent"><?php _e('content', 'pmxi_plugin' )?>&nbsp;</label>
+									</div>
+									<div class="input">
 										<input type="radio" id="duplicate_indicator_custom_field_parent" class="switcher" name="parent_indicator" value="custom field" <?php echo 'custom field' == $post['parent_indicator'] ? 'checked="checked"': '' ?>/>
 										<label for="duplicate_indicator_custom_field_parent"><?php _e('custom field', 'pmxi_plugin' )?></label><br>
 										<span class="switcher-target-duplicate_indicator_custom_field_parent" style="vertical-align:middle" style="padding-left:17px;">
-											<?php _e('Name', 'pmxi_plugin') ?>
-											<input type="text" name="custom_parent_indicator_name" value="<?php echo esc_attr($post['custom_parent_indicator_name']) ?>" style="float:none; margin:1px;" /><br>
-											<?php _e('Value', 'pmxi_plugin') ?>
-											<input type="text" name="custom_parent_indicator_value" value="<?php echo esc_attr($post['custom_parent_indicator_value']) ?>" style="float:none; margin:1px; margin-left:3px;" />
+											<div class="input">
+												<label><?php _e('Name', 'pmxi_plugin') ?></label>
+												<input type="text" name="custom_parent_indicator_name" value="<?php echo esc_attr($post['custom_parent_indicator_name']) ?>" style="float:none; margin:1px;" />
+											</div>
+											<div class="input">
+												<label><?php _e('Value', 'pmxi_plugin') ?></label>
+												<input type="text" name="custom_parent_indicator_value" value="<?php echo esc_attr($post['custom_parent_indicator_value']) ?>" style="float:none; margin:1px; margin-left:3px;" />
+											</div>
 										</span>
 									</div>
 								</div>
@@ -1268,6 +1344,12 @@
 								<input type="checkbox" id="disable_sku_matching" name="disable_sku_matching" value="1" <?php echo $post['disable_sku_matching'] ? 'checked="checked"' : '' ?> />
 								<label for="disable_sku_matching"><?php _e('Disable SKU matching', 'pmxi_plugin') ?></label>
 								<a href="#help" class="help" title="<?php _e('Plugin will NOT search matches for SKU. This option will speed up import process.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
+							</div>
+							<div class="input" style="padding-left:20px;">
+								<input type="hidden" name="disable_prepare_price" value="0" />
+								<input type="checkbox" id="disable_prepare_price" name="disable_prepare_price" value="1" <?php echo $post['disable_prepare_price'] ? 'checked="checked"' : '' ?> />
+								<label for="disable_prepare_price"><?php _e('Disable automatic fixing of improperly formatted prices.', 'pmxi_plugin') ?></label>
+								<a href="#help" class="help" title="<?php _e('Plugin will NOT fix prices that presented with currency symbol.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
 							</div>
 						</div>
 					</div>

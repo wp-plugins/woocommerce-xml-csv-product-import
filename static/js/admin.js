@@ -213,14 +213,10 @@
 			
 			var parent_tagno = parseInt($('.tag').find('input[name="tagno"]').val());
 
-			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function () {
+			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function (data) {
 				$input.attr('readonly', false);			
 				$xml.xml('dragable');
-				if ($('.error').length){ 
-					$xml.html('');
-					$('#close_xml_tree').hide();
-				}
-				else $('#close_xml_tree').show();
+				$('#close_xml_tree').show();
 			});
 		};
 

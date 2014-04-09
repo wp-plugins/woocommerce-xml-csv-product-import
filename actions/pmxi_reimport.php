@@ -19,6 +19,11 @@ function pmwi_pmxi_reimport($entry, $post){
 
 	?>
 	<div class="input">
+		<input type="hidden" name="is_update_product_type" value="0" />
+		<input type="checkbox" id="is_update_product_type_<?php echo $entry; ?>" name="is_update_product_type" value="1" <?php echo $post['is_update_product_type'] ? 'checked="checked"': '' ?>  class="switcher"/>
+		<label for="is_update_product_type_<?php echo $entry; ?>"><?php _e('Product Type', 'pmxi_plugin') ?></label>
+	</div>
+	<div class="input">		
 		<input type="hidden" name="attributes_list" value="0" />			
 		<input type="hidden" name="is_update_attributes" value="0" />
 		<input type="checkbox" id="is_update_attributes_<?php echo $entry; ?>" name="is_update_attributes" value="1" <?php echo $post['is_update_attributes'] ? 'checked="checked"': '' ?>  class="switcher"/>
