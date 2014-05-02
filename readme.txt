@@ -112,6 +112,6 @@ We do not handle support in the WordPress.org community forums.
 
 We do try to handle support for our free version users at the following e-mail address:
 
-E-mail: support@soflyy.com
+E-mail: support@wpallimport.com
 
 Support for free version customers is not guaranteed and based on ability. For premium support, [purchase WP All Import and the WooCommerce add-on.](http://www.wpallimport.com/upgrade-to-pro)
