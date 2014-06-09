@@ -427,7 +427,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				);						
 
 			}
-		} 					
+		} 						
 
 		remove_filter('user_has_cap', array($this, '_filter_has_cap_unfiltered_html')); kses_init(); // return any filtering rules back if they has been disabled for import procedure
 		
@@ -505,11 +505,15 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_height')) update_post_meta( $pid, '_height', '' );
 		}		
 
-		$this->wpdb->update( $this->wpdb->posts, array('comment_status' => ($product_enable_reviews[$i] == 'yes') ? 'open' : 'closed','menu_order' => ($product_menu_order[$i] != '') ? $product_menu_order[$i] : 0 ), array('ID' => $pid) );			
+		$this->wpdb->update( $this->wpdb->posts, array('comment_status' => ($product_enable_reviews[$i] == 'yes') ? 'open' : 'closed' ), array('ID' => $pid));
+		// update menu order
+		if ($import->options['is_update_menu_order']) $this->wpdb->update( $this->wpdb->posts, array('menu_order' => ($product_menu_order[$i] != '') ? $product_menu_order[$i] : 0 ), array('ID' => $pid));
 
 		// Save shipping class
-		$product_shipping_class = is_numeric($product_shipping_class[$i]) && $product_shipping_class[$i] > 0 && $product_type != 'external' ? absint( $product_shipping_class[$i] ) : $product_shipping_class[$i];
-		wp_set_object_terms( $pid, $product_shipping_class, 'product_shipping_class');
+		if ( pmwi_is_update_taxonomy($articleData, $import->options, 'product_shipping_class') ){
+			$product_shipping_class = is_numeric($product_shipping_class[$i]) && $product_shipping_class[$i] > 0 && $product_type != 'external' ? absint( $product_shipping_class[$i] ) : $product_shipping_class[$i];
+			wp_set_object_terms( $pid, $product_shipping_class, 'product_shipping_class');
+		}
 
 		// Unique SKU
 		$sku				= get_post_meta($pid, '_sku', true);
@@ -620,7 +624,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 							 			$term_founded = false;	
 										if ( count($terms) > 0 ){	
 										    foreach ( $terms as $term ) {									    										    	
-										    	if ( strtolower($term->name) == trim(strtolower($value)) ) {
+										    	if ( strtolower($term->name) == trim(strtolower($value)) or $term->slug == sanitize_title(trim(strtolower($value)))) {
 										    		$attr_values[] = $term->slug;									    		
 										    		$term_founded = true;
 										    		break;
@@ -867,7 +871,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		// Upsells
 		if ( !empty( $product_up_sells[$i] ) ) {
 			$upsells = array();
-			$ids = explode(',', $product_up_sells[$i]);
+			$ids = array_filter(explode(',', $product_up_sells[$i]), 'trim');
 			foreach ( $ids as $id ){								
 				$args = array(
 					'post_type' => 'product',
@@ -893,7 +897,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		// Cross sells
 		if ( !empty( $product_cross_sells[$i] ) ) {
 			$crosssells = array();
-			$ids = explode(',', $product_cross_sells[$i]);
+			$ids = array_filter(explode(',', $product_cross_sells[$i]), 'trim');
 			foreach ( $ids as $id ){
 				$args = array(
 					'post_type' => 'product',
@@ -1104,7 +1108,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			
 		}		
 
-		//$woocommerce->clear_product_transients( $post_id );
+		wc_delete_product_transients( $post_id );
 
 		return $added;
 	}
@@ -1184,6 +1188,14 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				update_post_meta($new_id, $meta_key, $meta_value);
 			}
 		}
+
+		update_post_meta( $post->ID, '_stock_tmp', $tmp = get_post_meta( $post->ID, '_stock', true) );
+		update_post_meta( $post->ID, '_stock', '');
+		update_post_meta( $post->ID, '_regular_price_tmp', $tmp = get_post_meta( $post->ID, '_regular_price', true) );
+		update_post_meta( $post->ID, '_regular_price', '' );
+		update_post_meta( $post->ID, '_price_tmp', $tmp = get_post_meta( $post->ID, '_price', true) );
+		update_post_meta( $post->ID, '_price', '');
+		
 	}	
 
 	function auto_cloak_links($import, &$url){
