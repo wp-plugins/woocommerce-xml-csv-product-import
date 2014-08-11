@@ -78,7 +78,7 @@
 		if ($('#link_all_variations').is(':checked')) $('.variations_tab').hide(); else if (is_variable) $('.variations_tab').show();			
 		
 		if ($('#xml_matching_parent').is(':checked') && is_variable) $('#variations_tag').show(); else $('#variations_tag').hide();
-
+		
 		if ( ! is_simple ) {
 			$('.woocommerce_options_panel').find('input, select').attr('disabled','disabled'); 
 			$('.upgrade_template').show();
@@ -213,11 +213,12 @@
 			
 			var parent_tagno = parseInt($('.tag').find('input[name="tagno"]').val());
 
-			$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function (data) {
+			$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function (data) {
+				$('#variations_console').html(data.html);
 				$input.attr('readonly', false);			
 				$xml.xml('dragable');
 				$('#close_xml_tree').show();
-			});
+			}, 'json');
 		};
 
 		$xml.find('.navigation a').live('click', function () {

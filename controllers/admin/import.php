@@ -17,10 +17,8 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 		$this->data['id'] = $id = $this->input->get('id');
 
 		$this->data['import'] = $import = new PMXI_Import_Record();			
-		if ( ! $id or $import->getById($id)->isEmpty()) { // specified import is not found
-			$post = $this->input->post(			
-				$default			
-			);
+		if ( ! $id or $import->getById($id)->isEmpty()) { // specified import is not found			
+			$post = $this->input->post( apply_filters( 'pmxi_options_options', $default, true) );	
 		}
 		else 
 			$post = $this->input->post(

@@ -230,10 +230,18 @@
 								</div>
 								<div class="switcher-target-multiple_product_tax_class_yes"  style="padding-left:17px;">
 									<div class="input">
+										<?php
+										$tax_classes = array_filter( array_map( 'trim', explode( "\n", get_option( 'woocommerce_tax_classes' ) ) ) );
+										$classes_options = array();
+										$classes_options[''] = __( 'Standard', 'woocommerce' );
+							    		if ( $tax_classes )
+							    			foreach ( $tax_classes as $class )
+							    				$classes_options[ sanitize_title( $class ) ] = esc_html( $class );										
+										?>
 										<select class="select short" name="multiple_product_tax_class">
-											<option value="" <?php echo '' == $post['multiple_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Standard', 'woocommerce');?></option>
-											<option value="reduced-rate" <?php echo 'reduced-rate' == $post['multiple_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Reduced Rate', 'woocommerce');?></option>
-											<option value="zero-rate" <?php echo 'zero-rate' == $post['multiple_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Zero Rate', 'woocommerce');?></option>
+											<?php foreach ($classes_options as $key => $value):?>
+												<option value="<?php echo $key; ?>" <?php echo $key == $post['multiple_product_tax_class'] ? 'selected="selected"': '' ?>><?php echo $value; ?></option>
+											<?php endforeach; ?>											
 										</select>
 									</div>
 								</div>
@@ -367,16 +375,18 @@
 					<!-- SHIPPING -->
 
 					<div class="panel woocommerce_options_panel" id="shipping_product_data" style="display:none;">
+						
 						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
 							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
 						</p>
+
 						<div class="options_group">
 							<p class="form-field">
-								<label><?php _e("Weight (kg)"); ?></label>
+								<label><?php _e("Weight (" . get_option('woocommerce_weight_unit') . ")"); ?></label>
 								<input type="text" class="short" placeholder="0.00" name="single_product_weight" style="" value="<?php echo esc_attr($post['single_product_weight']) ?>"/>
 							</p>
 							<p class="form-field">
-								<label><?php _e("Dimensions (cm)"); ?></label>
+								<label><?php _e("Dimensions (" . get_option( 'woocommerce_dimension_unit' ) . ")"); ?></label>
 								<input type="text" class="short" placeholder="Length" name="single_product_length" style="margin-right:5px;" value="<?php echo esc_attr($post['single_product_length']) ?>"/>
 								<input type="text" class="short" placeholder="Width" name="single_product_width" style="margin-right:5px;" value="<?php echo esc_attr($post['single_product_width']) ?>"/>
 								<input type="text" class="short" placeholder="Height" name="single_product_height" style="" value="<?php echo esc_attr($post['single_product_height']) ?>"/>
@@ -392,8 +402,7 @@
 								<div class="switcher-target-multiple_product_shipping_class_yes"  style="padding-left:17px;">
 									<div class="input">
 										<?php
-											$classes = get_the_terms( 0, 'product_shipping_class' );
-											if ( $classes && ! is_wp_error( $classes ) ) $current_shipping_class = current($classes)->term_id; else $current_shipping_class = '';
+											$classes = get_the_terms( 0, 'product_shipping_class' );											
 
 											$args = array(
 												'taxonomy' 			=> 'product_shipping_class',
@@ -401,7 +410,7 @@
 												'show_option_none' 	=> __( 'No shipping class', 'woocommerce' ),
 												'name' 				=> 'multiple_product_shipping_class',
 												'id'				=> 'multiple_product_shipping_class',
-												'selected'			=> $current_shipping_class,
+												'selected'			=> $post['multiple_product_shipping_class'],
 												'class'				=> 'select short'
 											);
 
@@ -428,9 +437,11 @@
 					<!-- LINKED PRODUCT -->
 
 					<div class="panel woocommerce_options_panel" id="linked_product_data" style="display:none;">
+						
 						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
 							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
 						</p>
+
 						<div class="options_group">
 							<p class="form-field">
 								<label><?php _e("Up-Sells"); ?></label>
@@ -536,9 +547,11 @@
 					<!-- ATTRIBUTES -->
 
 					<div class="panel woocommerce_options_panel" id="woocommerce_attributes" style="display:none;">
+						
 						<p class="upgrade_template" style='display:none; font-size: 1.3em; font-weight: bold;'>
 							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
 						</p>
+
 						<div class="input">
 							<table class="form-table custom-params" id="attributes_table" style="max-width:95%;">
 								<thead>
@@ -841,6 +854,12 @@
 												<p class="form-field">
 													<label style="width:150px;"><?php _e('SKU','woocommerce');?></label>
 													<input type="text" value="<?php echo esc_attr($post['variable_sku']) ?>" style="" name="variable_sku" class="short">
+													<span class="use_parent">
+														<input type="hidden" name="variable_sku_add_parent" value="0"/>
+														<input type="checkbox" name="variable_sku_add_parent" id="variable_sku_add_parent" style="position:relative; top:6px; margin-left:5px;" <?php echo ($post['variable_sku_add_parent']) ? 'checked="checked"' : ''; ?>>
+														<label for="variable_sku_add_parent" style="top:2px;">Add value to the parent SKU</label>
+														<a href="#help" class="help" title="<?php _e('Enable this checkbox to combine SKU from parent and variation products.', 'pmxi_plugin') ?>" style="position:relative; top:2px;">?</a>
+													</span>
 												</p>
 												<p class="form-field">
 													<label style="width:150px;"><?php _e('Stock Qty', 'woocommerce');?></label>
@@ -1019,12 +1038,20 @@
 														</div>
 														<div class="switcher-target-multiple_variable_product_tax_class_yes"  style="padding-left:17px;">
 															<div class="input">
+																<?php
+																$tax_classes = array_filter( array_map( 'trim', explode( "\n", get_option( 'woocommerce_tax_classes' ) ) ) );
+																$classes_options = array();
+																$classes_options[''] = __( 'Standard', 'woocommerce' );
+													    		if ( $tax_classes )
+													    			foreach ( $tax_classes as $class )
+													    				$classes_options[ sanitize_title( $class ) ] = esc_html( $class );										
+																?>
 																<select class="select short" name="multiple_variable_product_tax_class">
 																	<option value="parent" <?php echo 'parent' == $post['multiple_variable_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Same as parent', 'woocommerce');?></option>
-																	<option value="" <?php echo '' == $post['multiple_variable_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Standard', 'woocommerce');?></option>
-																	<option value="reduced-rate" <?php echo 'reduced-rate' == $post['multiple_variable_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Reduced Rate', 'woocommerce');?></option>
-																	<option value="zero-rate" <?php echo 'zero-rate' == $post['multiple_variable_product_tax_class'] ? 'selected="selected"': '' ?>><?php _e('Zero Rate', 'woocommerce');?></option>
-																</select>
+																	<?php foreach ($classes_options as $key => $value):?>
+																		<option value="<?php echo $key; ?>" <?php echo $key == $post['multiple_variable_product_tax_class'] ? 'selected="selected"': '' ?>><?php echo $value; ?></option>
+																	<?php endforeach; ?>											
+																</select>																
 															</div>
 														</div>
 													</div>
@@ -1149,7 +1176,7 @@
 																<?php foreach ($post['variable_attribute_name'] as $i => $name): if ("" == $name) continue; ?>
 																	<tr class="form-field">
 																		<td><input type="text" name="variable_attribute_name[]"  value="<?php echo esc_attr($name) ?>" style="width:95% !important;"/></td>
-																		<td><textarea name="variable_attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo str_replace("&amp;","&", htmlentities(htmlentities($post['variable_attribute_value'][$i]))); ?></textarea>
+																		<td><textarea name="variable_attribute_value[]" placeholder="Enter some text, or some attributes by pipe (|) separating values."><?php echo esc_attr($post['variable_attribute_value'][$i]); ?></textarea>
 																		<br>
 																		<span class='in_variations' style="margin-left:0px;">
 																			<input type="checkbox" name="variable_in_variations[]" id="variable_in_variations_<?php echo $i; ?>" <?php echo ($post['variable_in_variations'][$i]) ? 'checked="checked"' : ''; ?> style="width: auto; position: relative; top: 1px; left: 0px;" value="1"/>
@@ -1326,7 +1353,7 @@
 							<a href="http://www.wpallimport.com/upgrade-to-pro?utm_source=wordpress.org&utm_medium=wooco&utm_campaign=free+plugin+wooco" target="_blank" class="upgrade_link">Upgrade to the pro version of the WooCommerce Add-On to import to grouped, affiliate/external, and variable products.</a>
 						</p>
 						<div class="options_group">
-							<p class="form-field" style="font-size:16px; font-weight:bold;"><?php _e('Re-import options','pmxi_plugin');?></p>
+							<p class="form-field" style="font-size:16px; font-weight:bold;"><?php _e('Import options','pmxi_plugin');?></p>
 							<div class="input" style="padding-left:20px;">
 								<input type="hidden" name="missing_records_stock_status" value="0" />
 								<input type="checkbox" id="missing_records_stock_status" name="missing_records_stock_status" value="1" <?php echo $post['missing_records_stock_status'] ? 'checked="checked"' : '' ?> />
@@ -1350,6 +1377,13 @@
 								<input type="checkbox" id="disable_prepare_price" name="disable_prepare_price" value="1" <?php echo $post['disable_prepare_price'] ? 'checked="checked"' : '' ?> />
 								<label for="disable_prepare_price"><?php _e('Disable automatic fixing of improperly formatted prices.', 'pmxi_plugin') ?></label>
 								<a href="#help" class="help" title="<?php _e('Plugin will NOT fix prices that presented with currency symbol.', 'pmxi_plugin') ?>" style="position:relative; top:-2px;">?</a>
+							</div>							
+						</div>
+						<div class="options_group show_if_variable">
+							<div class="input" style="padding-left:20px;">
+								<input type="hidden" name="make_simple_product" value="0" />
+								<input type="checkbox" id="make_simple_product" name="make_simple_product" value="1" <?php echo $post['make_simple_product'] ? 'checked="checked"' : '' ?> />
+								<label for="make_simple_product"><?php _e('Create products with no variations as simple products.', 'pmxi_plugin') ?></label>								
 							</div>
 						</div>
 					</div>
