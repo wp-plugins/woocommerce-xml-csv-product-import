@@ -74,7 +74,7 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 == Changelog ==
 
 = 1.2.0 = 
-* IMPORTANT: WP All Import v4 (3.2.0) is a MAJOR update. Read this post before upgrading: [http://www.wpallimport.com/2014/11/free-version-wordpress-org-update-information] (http://www.wpallimport.com/2014/11/free-version-wordpress-org-update-information)
+* IMPORTANT: WP All Import v4 (3.2.0) is a MAJOR update. Read this post before upgrading: (http://www.wpallimport.com/2014/11/free-version-wordpress-org-update-information)
 * speed up the import of taxonomies/categories
 * updated design
 * new option - adjust prices (mark up, mark down, convert currency)
