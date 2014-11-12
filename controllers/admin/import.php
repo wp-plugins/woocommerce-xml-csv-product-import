@@ -17,8 +17,9 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 		$this->data['id'] = $id = $this->input->get('id');
 
 		$this->data['import'] = $import = new PMXI_Import_Record();			
-		if ( ! $id or $import->getById($id)->isEmpty()) { // specified import is not found			
-			$post = $this->input->post( apply_filters( 'pmxi_options_options', $default, true) );	
+		if ( ! $id or $import->getById($id)->isEmpty()) { // specified import is not found		
+			$DefaultOptions = ((!empty(PMXI_Plugin::$session->options)) ? PMXI_Plugin::$session->options : array()) + $default;	
+			$post = $this->input->post( apply_filters( 'pmxi_options_options', $DefaultOptions, true) );	
 		}
 		else 
 			$post = $this->input->post(
@@ -26,7 +27,7 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 				+ $default			
 			);		
 
-		$this->data['is_loaded_template'] = (!empty(PMXI_Plugin::$session->data['pmxi_import']) and !empty(PMXI_Plugin::$session->data['pmxi_import']['is_loaded_template'])) ? PMXI_Plugin::$session->data['pmxi_import']['is_loaded_template'] : false;
+		$this->data['is_loaded_template'] = (!empty(PMXI_Plugin::$session->is_loaded_template)) ? PMXI_Plugin::$session->is_loaded_template : false;
 
 		$load_options = $this->input->post('load_template');
 
@@ -42,11 +43,7 @@ class PMWI_Admin_Import extends PMWI_Controller_Admin {
 			$post = $default;
 							
 		}
-		
-		$this->data['woo_commerce_attributes'] = $woo_commerce_attributes = new PMXI_Model_List();
-		$woo_commerce_attributes->setTable(PMXI_Plugin::getInstance()->getWPPrefix() . 'woocommerce_attribute_taxonomies');
-		$woo_commerce_attributes->setColumns('attribute_name', 'attribute_id', 'attribute_label')->getBy(NULL, "attribute_id", NULL, NULL, "attribute_name");				
-
+				
 		$this->data['post'] =& $post;
 
 		$this->render();

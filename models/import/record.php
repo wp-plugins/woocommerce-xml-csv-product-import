@@ -10,6 +10,13 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 	public $options = array();
 
+	public $previousID;
+
+	public $post_meta_to_update;
+	public $post_meta_to_insert;
+	public $existing_meta_keys;
+	public $articleData;
+	
 	/**
 	 * Initialize model instance
 	 * @param array[optional] $data Array of record data to initialize object with
@@ -34,7 +41,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 		add_filter('user_has_cap', array($this, '_filter_has_cap_unfiltered_html')); kses_init(); // do not perform special filtering for imported content
 		
-		$this->options = $import->options;
+		$this->options = $import->options;		
 
 		$cxpath = $xpath_prefix . $import->xpath;
 
@@ -114,7 +121,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		}
 
 		if ("" != $import->options['single_product_regular_price']){
-			$this->data['product_regular_price'] = array_map(array($this, 'prepare_price'), XmlImportParser::factory($xml, $cxpath, $import->options['single_product_regular_price'], $file)->parse($records)); $tmp_files[] = $file;			
+			$this->data['product_regular_price'] = array_map(array($this, 'adjust_price'), array_map(array($this, 'prepare_price'), XmlImportParser::factory($xml, $cxpath, $import->options['single_product_regular_price'], $file)->parse($records)),  array_fill(0, $count, "regular_price")); $tmp_files[] = $file;			
 		}
 		else{
 			$count and $this->data['product_regular_price'] = array_fill(0, $count, "");
@@ -135,7 +142,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		}
 
 		if ("" != $import->options['single_product_sale_price']){
-			$this->data['product_sale_price'] = array_map(array($this, 'prepare_price'), XmlImportParser::factory($xml, $cxpath, $import->options['single_product_sale_price'], $file)->parse($records)); $tmp_files[] = $file;
+			$this->data['product_sale_price'] = array_map(array($this, 'adjust_price'), array_map(array($this, 'prepare_price'), XmlImportParser::factory($xml, $cxpath, $import->options['single_product_sale_price'], $file)->parse($records)), array_fill(0, $count, "sale_price")); $tmp_files[] = $file;
 		}
 		else{
 			$count and $this->data['product_sale_price'] = array_fill(0, $count, "");
@@ -217,6 +224,12 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		// Composing product Stock status							
 		if ($import->options['product_stock_status'] == 'xpath' and "" != $import->options['single_product_stock_status']){
 			$this->data['product_stock_status'] = XmlImportParser::factory($xml, $cxpath, $import->options['single_product_stock_status'], $file)->parse($records); $tmp_files[] = $file;						
+		}
+		elseif($import->options['product_stock_status'] == 'auto'){
+			$count and $this->data['product_stock_status'] = array_fill(0, $count, $import->options['product_stock_status']);
+			foreach ($this->data['product_stock_qty'] as $key => $value) {
+				$this->data['product_stock_status'][$key] = ($value === 0) ? 'outofstock' : 'instock';
+			}
 		}
 		else{
 			$count and $this->data['product_stock_status'] = array_fill(0, $count, $import->options['product_stock_status']);
@@ -442,109 +455,101 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		return ("" == $var) ? false : true;
 	}
 
-	public function import($importData = array()){ //$pid, $i, $import, $articleData, $xml, $is_cron = false, $xpath_prefix = ""
+	public function import( $importData = array() ){
 
-		extract($importData);
+		extract($importData); 
 
-		if ($import->options['custom_type'] != 'product') return;		
+		if ($this->options['custom_type'] != 'product') return;
 
-		$cxpath = $xpath_prefix . $import->xpath;		
+		$cxpath = $xpath_prefix . $import->xpath;
 
 		global $woocommerce;		
 
 		extract($this->data);
 
-		// Add any default post meta
-		add_post_meta( $pid, 'total_sales', '0', true );
+		$is_new_product = empty($articleData['ID']);
 
 		// Get types
-		$product_type 		= empty( $product_types[$i] ) ? 'simple' : sanitize_title( stripslashes( $product_types[$i] ) );
+		$product_type 	= empty( $product_types[$i] ) ? 'simple' : sanitize_title( stripslashes( $product_types[$i] ) );
 
-		if ( ! $import->options['is_update_product_type'] and ! empty($articleData['ID']) ){
-			
-			$product = get_product($pid);
-			$product_type = $product->product_type;
-
-			/*if ( strpos($articleData['post_title'], 'Variation') === 0 ) { 
-				$this->wpdb->update( $this->wpdb->posts, array('post_type' => 'product_variation', array('ID' => $articleData['ID']) ));			
-				$product_type = 'variable';
-			}*/
-
+		if ( ! $this->options['is_update_product_type'] and ! $is_new_product ){			
+			$product 	  = get_product($pid);
+			$product_type = $product->product_type;			
 		}
+
+		$this->existing_meta_keys = array();
+		foreach (get_post_meta($pid, '') as $cur_meta_key => $cur_meta_val) $this->existing_meta_keys[] = $cur_meta_key;
+
+		$this->post_meta_to_update = array(); // for bulk UPDATE SQL query
+		$this->post_meta_to_insert = array(); // for bulk INSERT SQL query
+		$this->articleData = $articleData;
+		$this->pushmeta($pid, 'total_sales', '0');
 
 		$is_downloadable 	= $product_downloadable[$i];
 		$is_virtual 		= $product_virtual[$i];
 		$is_featured 		= $product_featured[$i];
 
-		if ( class_exists('woocommerce_wholesale_pricing') ):			
-			if ($product_type == "simple") add_action( 'woocommerce_process_product_meta_simple', array( &$this, 'process_product_meta' ), 2, 1 );
-			if ($product_type == "variable") add_action( 'woocommerce_save_product_variation', array( &$this, 'process_product_meta_variable' ), 1000, 1 );
-		endif;
-
-		$existing_meta_keys = array();
-		foreach (get_post_meta($pid, '') as $cur_meta_key => $cur_meta_val) $existing_meta_keys[] = $cur_meta_key;
-				
 		// Product type + Downloadable/Virtual
-		if (empty($articleData['ID']) or $import->options['is_update_product_type']) wp_set_object_terms( $pid, $product_type, 'product_type' );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_downloadable')) update_post_meta( $pid, '_downloadable', ($is_downloadable == "yes") ? 'yes' : 'no' );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_virtual')) update_post_meta( $pid, '_virtual', ($is_virtual == "yes") ? 'yes' : 'no' );						
+		if ($is_new_product or $this->options['is_update_product_type']) 			
+			wp_set_object_terms( $pid, $product_type, 'product_type' );
+
+		$this->pushmeta($pid, '_downloadable', ($is_downloadable == "yes") ? 'yes' : 'no' );
+		$this->pushmeta($pid, '_virtual', ($is_virtual == "yes") ? 'yes' : 'no' );
 
 		// Update post meta
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_regular_price')) update_post_meta( $pid, '_regular_price', stripslashes( $product_regular_price[$i] ) );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price')) update_post_meta( $pid, '_sale_price', stripslashes( $product_sale_price[$i] ) );
-		if ( class_exists('woocommerce_wholesale_pricing') and (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, 'wholesale_price'))) update_post_meta( $pid, 'pmxi_wholesale_price', stripslashes( $product_whosale_price[$i] ) );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_tax_status')) update_post_meta( $pid, '_tax_status', stripslashes( $product_tax_status[$i] ) );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_tax_class')) update_post_meta( $pid, '_tax_class', stripslashes( $product_tax_class[$i] ) );			
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_visibility')) update_post_meta( $pid, '_visibility', stripslashes( $product_visibility[$i] ) );			
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_purchase_note')) update_post_meta( $pid, '_purchase_note', stripslashes( $product_purchase_note[$i] ) );
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_featured')) update_post_meta( $pid, '_featured', ($is_featured == "yes") ? 'yes' : 'no' );
+		$this->pushmeta($pid, '_regular_price', stripslashes( $product_regular_price[$i] ) );
+		$this->pushmeta($pid, '_sale_price', stripslashes( $product_sale_price[$i] ) );
+		$this->pushmeta($pid, '_tax_status', stripslashes( $product_tax_status[$i] ) );
+		$this->pushmeta($pid, '_tax_class', stripslashes( $product_tax_class[$i] ) );
+		$this->pushmeta($pid, '_visibility', stripslashes( $product_visibility[$i] ) );
+		$this->pushmeta($pid, '_purchase_note', stripslashes( $product_purchase_note[$i] ) );
+		$this->pushmeta($pid, '_featured', ($is_featured == "yes") ? 'yes' : 'no' );
 
 		// Dimensions
 		if ( $is_virtual == 'no' ) {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_weight')) update_post_meta( $pid, '_weight', stripslashes( $product_weight[$i] ) );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_length')) update_post_meta( $pid, '_length', stripslashes( $product_length[$i] ) );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_width')) update_post_meta( $pid, '_width', stripslashes( $product_width[$i] ) );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_height')) update_post_meta( $pid, '_height', stripslashes( $product_height[$i] ) );
+			$this->pushmeta($pid, '_weight', stripslashes( $product_weight[$i] ) );
+			$this->pushmeta($pid, '_length', stripslashes( $product_length[$i] ) );
+			$this->pushmeta($pid, '_width', stripslashes( $product_width[$i] ) );
+			$this->pushmeta($pid, '_height', stripslashes( $product_height[$i] ) );			
 		} else {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_weight')) update_post_meta( $pid, '_weight', '' );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_length')) update_post_meta( $pid, '_length', '' );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_width')) update_post_meta( $pid, '_width', '' );
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_height')) update_post_meta( $pid, '_height', '' );
-		}		
+			$this->pushmeta($pid, '_weight', '' );
+			$this->pushmeta($pid, '_length', '' );
+			$this->pushmeta($pid, '_width', '' );
+			$this->pushmeta($pid, '_height', '' );			
+		}
 
 		$this->wpdb->update( $this->wpdb->posts, array('comment_status' => ($product_enable_reviews[$i] == 'yes') ? 'open' : 'closed' ), array('ID' => $pid));
-		// update menu order
-		if ($import->options['is_update_menu_order']) $this->wpdb->update( $this->wpdb->posts, array('menu_order' => ($product_menu_order[$i] != '') ? $product_menu_order[$i] : 0 ), array('ID' => $pid));
+
+		if ($this->options['update_all_data'] == 'yes' or $this->options['is_update_menu_order']) $this->wpdb->update( $this->wpdb->posts, array('menu_order' => ($product_menu_order[$i] != '') ? (int) $product_menu_order[$i] : 0 ), array('ID' => $pid));
 
 		// Save shipping class
-		if ( pmwi_is_update_taxonomy($articleData, $import->options, 'product_shipping_class') ){
+		if ( pmwi_is_update_taxonomy($articleData, $this->options, 'product_shipping_class') ){
 			$pshipping_class = is_numeric($product_shipping_class[$i]) && $product_shipping_class[$i] > 0 && $product_type != 'external' ? absint( $product_shipping_class[$i] ) : $product_shipping_class[$i];
 			if ($pshipping_class == "-1")
 				wp_set_object_terms( $pid, NULL, 'product_shipping_class');
 			else
-				wp_set_object_terms( $pid, $pshipping_class, 'product_shipping_class');
+				$this->associate_terms( $pid, array($pshipping_class), 'product_shipping_class' );				
 		}
 
 		// Unique SKU
-		$sku				= get_post_meta($pid, '_sku', true);
+		$sku				= ($is_new_product) ? '' : get_post_meta($pid, '_sku', true);
 		$new_sku 			= esc_html( trim( stripslashes( $product_sku[$i] ) ) );
 		
-		if ( $new_sku == '' and $import->options['disable_auto_sku_generation'] ) {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sku')) 				
-					update_post_meta( $pid, '_sku', '' );
+		if ( $new_sku == '' and $this->options['disable_auto_sku_generation'] ) {
+			$this->pushmeta($pid, '_sku', '' );				
 		}
-		elseif ( $new_sku == '' and ! $import->options['disable_auto_sku_generation'] ) {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sku')){				
-				$unique_keys = XmlImportParser::factory($xml, $cxpath, $import->options['unique_key'], $file)->parse(); $tmp_files[] = $file;
+		elseif ( $new_sku == '' and ! $this->options['disable_auto_sku_generation'] ) {
+			if ($is_new_product or $this->is_update_cf('_sku')){
+				$unique_keys = XmlImportParser::factory($xml, $cxpath, $this->options['unique_key'], $file)->parse(); $tmp_files[] = $file;
 				foreach ($tmp_files as $file) { // remove all temporary files created
-					unlink($file);
+					@unlink($file);
 				}
 				$new_sku = substr(md5($unique_keys[$i]), 0, 12);
 			}
 		}
 		if ( $new_sku != '' and $new_sku !== $sku ) {
 			if ( ! empty( $new_sku ) ) {
-				if ( ! $import->options['disable_sku_matching'] and 
+				if ( ! $this->options['disable_sku_matching'] and 
 					$this->wpdb->get_var( $this->wpdb->prepare("
 						SELECT ".$this->wpdb->posts.".ID
 					    FROM ".$this->wpdb->posts."
@@ -555,19 +560,21 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					 ", $new_sku ) )
 					) {
 					$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: Product SKU must be unique.', 'pmxi_plugin')));
-					$logger and PMXI_Plugin::$session['pmxi_import']['warnings'] = ++PMXI_Plugin::$session->data['pmxi_import']['warnings'];					
-				} else {
-					if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sku')) update_post_meta( $pid, '_sku', $new_sku );
+									
+				} else {					
+					$this->pushmeta($pid, '_sku', $new_sku );							
 				}
 			} else {
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sku')) update_post_meta( $pid, '_sku', '' );
+				$this->pushmeta($pid, '_sku', '' );
 			}
 		}
 
 		// Save Attributes
 		$attributes = array();
 
-		if ( $import->options['update_all_data'] == "yes" or ( $import->options['update_all_data'] == "no" and $import->options['is_update_attributes']) or empty($articleData['ID'])): // Update Product Attributes		
+		$is_variation_attributes_defined = false;
+
+		if ( $this->options['update_all_data'] == "yes" or ( $this->options['update_all_data'] == "no" and $this->options['is_update_attributes']) or $is_new_product): // Update Product Attributes		
 
 			$is_update_attributes = true;
 
@@ -588,9 +595,9 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					$is_taxonomy 	= intval( $attr_data['in_taxonomy'][$i] );
 
 					// Update only these Attributes, leave the rest alone
-					if ($import->options['update_all_data'] == "no" and $import->options['update_attributes_logic'] == 'only'){
-						if ( ! empty($import->options['attributes_list']) and is_array($import->options['attributes_list'])) {
-							if ( ! in_array( ( ($is_taxonomy) ? wc_attribute_taxonomy_name( $attr_name ) : $attr_name ) , array_filter($import->options['attributes_list'], 'trim'))){ 
+					if ($this->options['update_all_data'] == "no" and $this->options['update_attributes_logic'] == 'only'){
+						if ( ! empty($this->options['attributes_list']) and is_array($this->options['attributes_list'])) {
+							if ( ! in_array( ( ($is_taxonomy) ? wc_attribute_taxonomy_name( $attr_name ) : $attr_name ) , array_filter($this->options['attributes_list'], 'trim'))){ 
 								$attribute_position++;
 								continue;
 							}
@@ -602,9 +609,9 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					}
 
 					// Leave these attributes alone, update all other Attributes
-					if ($import->options['update_all_data'] == "no" and $import->options['update_attributes_logic'] == 'all_except'){
-						if ( ! empty($import->options['attributes_list']) and is_array($import->options['attributes_list'])) {
-							if ( in_array( ( ($is_taxonomy) ? wc_attribute_taxonomy_name( $attr_name ) : $attr_name ) , array_filter($import->options['attributes_list'], 'trim'))){ 
+					if ($this->options['update_all_data'] == "no" and $this->options['update_attributes_logic'] == 'all_except'){
+						if ( ! empty($this->options['attributes_list']) and is_array($this->options['attributes_list'])) {
+							if ( in_array( ( ($is_taxonomy) ? wc_attribute_taxonomy_name( $attr_name ) : $attr_name ) , array_filter($this->options['attributes_list'], 'trim'))){ 
 								$attribute_position++;
 								continue;
 							}
@@ -624,39 +631,26 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 						 	if ( ! empty($values) and taxonomy_exists( wc_attribute_taxonomy_name( $attr_name ) )){
 
-						 		$attr_values = array();
-						 		
-						 		$terms = get_terms( wc_attribute_taxonomy_name( $attr_name ), array('hide_empty' => false));								
-						 		
-						 		if ( ! is_wp_error($terms) ){
+						 		$attr_values = array();						 								 		
 						 			
-							 		foreach ($values as $key => $value) {
-							 			$term_founded = false;	
-										if ( count($terms) > 0 ){	
-										    foreach ( $terms as $term ) {												    	
-										    	if ( strtolower($term->name) == trim(strtolower($value)) or $term->slug == sanitize_title(trim(strtolower($value))) or $term->slug == trim($value)) {
-										    		$attr_values[] = (int) $term->term_id;
-										    		$term_founded = true;
-										    		break;
-										    	}
-										    }
-										}										
-									    if ( ! $term_founded and intval($attr_data['is_create_taxonomy_terms'][$i]) ){								    	
-									    	$term = wp_insert_term(
+						 		foreach ($values as $key => $value) {
+
+						 			$term = term_exists($value, wc_attribute_taxonomy_name( $attr_name ), 0);	
+
+						 			if ( empty($term) and !is_wp_error($term) ){																																
+										$term = term_exists(htmlspecialchars($value), wc_attribute_taxonomy_name( $attr_name ), 0);	
+										if ( empty($term) and !is_wp_error($term) and intval($attr_data['is_create_taxonomy_terms'][$i])){		
+											
+											$term = wp_insert_term(
 												$value, // the term 
-											  	wc_attribute_taxonomy_name( $attr_name ) // the taxonomy													  								  
-											);	
-											if ( ! is_wp_error($term) )												
-												$attr_values[] = (int) $term['term_id']; 																							
-												
-									    }
-							 		}	
-							 						 		
-							 	}
-							 	else {
-							 		$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: %s.', 'pmxi_plugin'), $terms->get_error_message()));
-							 		$logger and PMXI_Plugin::$session['pmxi_import']['warnings'] = ++PMXI_Plugin::$session->data['pmxi_import']['warnings'];
-							 	}
+											  	wc_attribute_taxonomy_name( $attr_name ) // the taxonomy										  	
+											);													
+										}
+									}
+									if ( ! is_wp_error($term) )												
+										$attr_values[] = (int) $term['term_taxonomy_id']; 
+
+						 		}
 
 						 		$values = $attr_values;
 						 		$values = array_map( 'intval', $values );
@@ -668,7 +662,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					 	
 				 		// Update post terms
 				 		if ( taxonomy_exists( wc_attribute_taxonomy_name( $attr_name ) ))			 			
-				 			wp_set_object_terms( $pid, $values, wc_attribute_taxonomy_name( $attr_name ) );			 		
+				 			$this->associate_terms( $pid, $values, wc_attribute_taxonomy_name( $attr_name ) );				 					 	
 				 		
 				 		if ( !empty($values) ) {									 			
 					 		// Add attribute to array, but don't set values
@@ -704,15 +698,19 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 				 	}
 
+				 	if ( $is_variation and $attr_data['value'][$i] != "" ) {
+				 		$is_variation_attributes_defined = true;
+				 	}
+
 				 	$attribute_position++;
 				}							
 			}						
 			
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_product_attributes') and $is_update_attributes) {
+			if ($is_new_product or $this->is_update_cf('_product_attributes') and $is_update_attributes) {
 				
 				$current_product_attributes = get_post_meta($pid, '_product_attributes', true);
 
-				update_post_meta( $pid, '_product_attributes', (( ! empty($current_product_attributes)) ? array_merge($current_product_attributes, $attributes) : $attributes) );	
+				$this->pushmeta($pid, '_product_attributes', ( ! empty($current_product_attributes)) ? array_merge($current_product_attributes, $attributes) : $attributes );					
 			}
 
 		endif;	// is update attributes
@@ -725,65 +723,46 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 			// Dates
 			if ( $date_from ){
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', strtotime( $date_from ) );
+				$this->pushmeta($pid, '_sale_price_dates_from', strtotime( $date_from ));				
 			}
 			else{
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', '' );
+				$this->pushmeta($pid, '_sale_price_dates_from', '');				
 			}
 
 			if ( $date_to ){
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', strtotime( $date_to ) );
+				$this->pushmeta($pid, '_sale_price_dates_to', strtotime( $date_to ));								
 			}
 			else{
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', '' );
+				$this->pushmeta($pid, '_sale_price_dates_to', '');												
 			}
 
 			if ( $date_to && ! $date_from ){
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
+				$this->pushmeta($pid, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );	
 			}
 
 			// Update price if on sale
 			if ( $product_sale_price[$i] != '' && $date_to == '' && $date_from == '' ){
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes( $product_sale_price[$i] ) );
+				$this->pushmeta($pid, '_price', stripslashes( $product_sale_price[$i] ));						
 			}
 			else{
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes( $product_regular_price[$i] ) );									
+				$this->pushmeta($pid, '_price', stripslashes( $product_regular_price[$i] ));						
 			}
 
-			if ( $product_sale_price[$i] != '' && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ){
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes($product_sale_price[$i]) );				
+			if ( $product_sale_price[$i] != '' && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ){				
+				$this->pushmeta($pid, '_price', stripslashes( $product_sale_price[$i] ));				
 			}
 
 			if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_price')) update_post_meta( $pid, '_price', stripslashes($product_regular_price[$i]) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_from')) update_post_meta( $pid, '_sale_price_dates_from', '');
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_to')) update_post_meta( $pid, '_sale_price_dates_to', '');
+				$this->pushmeta($pid, '_price', stripslashes( $product_regular_price[$i] ));				
+				$this->pushmeta($pid, '_sale_price_dates_from', '');				
+				$this->pushmeta($pid, '_sale_price_dates_to', '');													
 			}
-		}	
-
-		// Variable and grouped products have no prices
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_regular_price')){ 
-			update_post_meta( $pid, '_regular_price_tmp', $tmp = get_post_meta( $pid, '_regular_price', true) );			
 		}
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price')){ 
-			update_post_meta( $pid, '_sale_price_tmp', $tmp = get_post_meta( $pid, '_sale_price', true ) );			
-		}
-		if ( class_exists('woocommerce_wholesale_pricing') and (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, 'wholesale_price'))){ 
-			update_post_meta( $pid, 'pmxi_wholesale_price_tmp', $tmp = get_post_meta( $pid, 'pmxi_wholesale_price', true ) );			
-		}
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_from')){ 
-			update_post_meta( $pid, '_sale_price_dates_from_tmp', $tmp = get_post_meta( $pid, '_sale_price_dates_from', true ) );			
-		}
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sale_price_dates_to')){ 
-			update_post_meta( $pid, '_sale_price_dates_to_tmp', $tmp = get_post_meta( $pid, '_sale_price_dates_to', true ) );			
-		}
-		if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_price')){ 
-			update_post_meta( $pid, '_price_tmp', $tmp = get_post_meta( $pid, '_price', true ) );						
-		}	
 
 		if (in_array( $product_type, array( 'simple', 'external' ) )) { 
-			if ($import->options['is_multiple_grouping_product'] != 'yes'){
-				if ($import->options['grouping_indicator'] == 'xpath' and ! is_numeric($product_grouping_parent[$i])){
+
+			if ($this->options['is_multiple_grouping_product'] != 'yes'){
+				if ($this->options['grouping_indicator'] == 'xpath' and ! is_numeric($product_grouping_parent[$i])){
 					$dpost = pmxi_findDuplicates(array(
 						'post_type' => 'product',
 						'ID' => $pid,
@@ -795,7 +774,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					else				
 						$product_grouping_parent[$i] = 0;
 				}
-				elseif ($import->options['grouping_indicator'] != 'xpath'){
+				elseif ($this->options['grouping_indicator'] != 'xpath'){
 					$dpost = pmxi_findDuplicates($articleData, $custom_grouping_indicator_name[$i], $custom_grouping_indicator_value[$i], 'custom field');
 					if (!empty($dpost))
 						$product_grouping_parent[$i] = array_shift($dpost);
@@ -805,12 +784,11 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			}
 
 			if ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0){
-				wp_update_post(array(
-					'ID' => $pid,
-					'post_parent' => absint( $product_grouping_parent[$i] )
-				));
+
+				$this->wpdb->update( $this->wpdb->posts, array('post_parent' => absint( $product_grouping_parent[$i] ) ), array('ID' => $pid));
+				
 			}
-		}
+		}	
 
 		// Update parent if grouped so price sorting works and stays in sync with the cheapest child
 		if ( $product_type == 'grouped' || ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0)) {
@@ -837,67 +815,67 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					) );
 					if ( $children_by_price ) {
 						foreach ( $children_by_price as $child ) {
-							$child_price = get_post_meta( $child, '_price', true );
+							$child_price = get_post_meta( $child, '_price', true );							
 							update_post_meta( $clear_id, '_price', $child_price );
 						}
 					}
 
 					// Clear cache/transients
-					wc_delete_product_transients( $clear_id );
+					//wc_delete_product_transients( $clear_id );
 				}
 			}
-		}
+		}	
 
 		// Sold Individuall
 		if ( "yes" == $product_sold_individually[$i] ) {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sold_individually')) update_post_meta( $pid, '_sold_individually', 'yes' );
+			$this->pushmeta($pid, '_sold_individually', 'yes');			
 		} else {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_sold_individually')) update_post_meta( $pid, '_sold_individually', '' );
+			$this->pushmeta($pid, '_sold_individually', '');			
 		}
-		
+
 		// Stock Data
 		if ( strtolower($product_manage_stock[$i]) == 'yes' ) {
 
 			if ( $product_type == 'grouped' ) {
 
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', '' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_manage_stock')) update_post_meta( $pid, '_manage_stock', 'no' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', 'no' );
-
+				$this->pushmeta($pid, '_stock_status', stripslashes( $product_stock_status[$i] ));	
+				$this->pushmeta($pid, '_stock', '');	
+				$this->pushmeta($pid, '_manage_stock', 'no');	
+				$this->pushmeta($pid, '_backorders', 'no');	
+				
 			} elseif ( $product_type == 'external' ) {
 
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', 'instock' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', '' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_manage_stock')) update_post_meta( $pid, '_manage_stock', 'no' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', 'no' );
-
+				$this->pushmeta($pid, '_stock_status', 'instock');	
+				$this->pushmeta($pid, '_stock', '');	
+				$this->pushmeta($pid, '_manage_stock', 'no');	
+				$this->pushmeta($pid, '_backorders', 'no');	
+				
 			} elseif ( ! empty( $product_manage_stock[$i] ) ) {
 
 				// Manage stock
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', (int) $product_stock_qty[$i] );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_manage_stock'))	update_post_meta( $pid, '_manage_stock', 'yes' );					
+				$this->pushmeta($pid, '_stock_status', stripslashes( $product_stock_status[$i] ));	
+				$this->pushmeta($pid, '_stock', (int) $product_stock_qty[$i]);	
+				$this->pushmeta($pid, '_manage_stock', 'yes');	
+				$this->pushmeta($pid, '_backorders', stripslashes( $product_allow_backorders[$i] ));				
 
 				// Check stock level
 				if ( $product_type !== 'variable' && $product_allow_backorders[$i] == 'no' && (int) $product_stock_qty[$i] < 1 ){
-					if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', 'outofstock' );
+					$this->pushmeta($pid, '_stock_status', 'outofstock');						
 				}
 
 			} else {
 
 				// Don't manage stock
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock')) update_post_meta( $pid, '_stock', '' );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_backorders')) update_post_meta( $pid, '_backorders', stripslashes( $product_allow_backorders[$i] ) );
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_manage_stock')) update_post_meta( $pid, '_manage_stock', 'no' );
+				$this->pushmeta($pid, '_stock_status', stripslashes( $product_stock_status[$i] ));	
+				$this->pushmeta($pid, '_stock', '');	
+				$this->pushmeta($pid, '_manage_stock', 'no');	
+				$this->pushmeta($pid, '_backorders', stripslashes( $product_allow_backorders[$i] ));				
 
 			}
 
 		} else {
 
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_stock_status')) update_post_meta( $pid, '_stock_status', stripslashes( $product_stock_status[$i] ) );
+			$this->pushmeta($pid, '_stock_status', stripslashes( $product_stock_status[$i] ));				
 
 		}
 
@@ -922,9 +900,10 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				wp_reset_postdata();
 			}								
 
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_upsell_ids')) update_post_meta( $pid, '_upsell_ids', $upsells );
+			$this->pushmeta($pid, '_upsell_ids', $upsells);	
+			
 		} else {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_upsell_ids')) delete_post_meta( $pid, '_upsell_ids' );
+			if ($is_new_product or $this->is_update_cf('_upsell_ids')) delete_post_meta( $pid, '_upsell_ids' );
 		}
 
 		// Cross sells
@@ -947,10 +926,11 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 				wp_reset_postdata();
 			}								
+			
+			$this->pushmeta($pid, '_crosssell_ids', $crosssells);	
 
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_crosssell_ids')) update_post_meta( $pid, '_crosssell_ids', $crosssells );
 		} else {
-			if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_crosssell_ids')) delete_post_meta( $pid, '_crosssell_ids' );
+			if ($is_new_product or $this->is_update_cf('_crosssell_ids')) delete_post_meta( $pid, '_crosssell_ids' );
 		}
 
 		// Downloadable options
@@ -968,23 +948,196 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			if ( !empty( $product_files[$i] ) ) {
 				$_file_paths = array();
 				
-				$file_paths = explode( $import->options['product_files_delim'] , $product_files[$i] );
-				$file_names = explode( $import->options['product_files_names_delim'] , $product_files_names[$i] );
+				$file_paths = explode( $this->options['product_files_delim'] , $product_files[$i] );
+				$file_names = explode( $this->options['product_files_names_delim'] , $product_files_names[$i] );
 
 				foreach ( $file_paths as $fn => $file_path ) {
 					$file_path = trim( $file_path );					
 					$_file_paths[ md5( $file_path ) ] = array('name' => ((!empty($file_names[$fn])) ? $file_names[$fn] : basename($file_path)), 'file' => $file_path);
 				}								
 
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_downloadable_files')) update_post_meta( $pid, '_downloadable_files', $_file_paths );
+				$this->pushmeta($pid, '_downloadable_files', $_file_paths);	
+
 			}
 			if ( isset( $product_download_limit[$i] ) )
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_download_limit')) update_post_meta( $pid, '_download_limit', esc_attr( $_download_limit ) );
+				$this->pushmeta($pid, '_download_limit', esc_attr( $_download_limit ));	
+
 			if ( isset( $product_download_expiry[$i] ) )
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_download_expiry')) update_post_meta( $pid, '_download_expiry', esc_attr( $_download_expiry ) );
+				$this->pushmeta($pid, '_download_expiry', esc_attr( $_download_expiry ));	
+				
 			if ( isset( $product_download_type[$i] ) )
-				if (empty($articleData['ID']) or $this->is_update_custom_field($existing_meta_keys, $import->options, '_download_type')) update_post_meta( $pid, '_download_type', esc_attr( $product_download_type[$i] ) );
+				$this->pushmeta($pid, '_download_type', esc_attr( $product_download_type ));	
+				
+		}		
+
+		// prepare bulk SQL query
+		//$this->executeSQL();
+				
+	}
+
+	protected function executeSQL(){
+		// prepare bulk SQL query
+		$table = _get_meta_table('post');
+		
+		if ( $this->post_meta_to_insert ){			
+			$values = array();
+			$already_added = array();
+			
+			foreach (array_reverse($this->post_meta_to_insert) as $key => $value) {
+				if ( ! empty($value['meta_key']) and ! in_array($value['pid'] . '-' . $value['meta_key'], $already_added) ){
+					$already_added[] = $value['pid'] . '-' . $value['meta_key'];						
+					$values[] = '(' . $value['pid'] . ',"' . $value['meta_key'] . '",\'' . maybe_serialize($value['meta_value']) .'\')';						
+				}
+			}
+			
+			$this->wpdb->query("INSERT INTO $table (`post_id`, `meta_key`, `meta_value`) VALUES " . implode(',', $values));
+			$this->post_meta_to_insert = array();
+		}	
+	}
+
+	protected function pushmeta($pid, $meta_key, $meta_value){
+
+		if (empty($meta_key)) return;		
+
+		//$table = _get_meta_table( 'post' );
+		
+		if ( empty($this->articleData['ID']) or $this->is_update_cf($meta_key)){
+			
+			update_post_meta($pid, $meta_key, $meta_value);
+
+			/*$this->wpdb->query($this->wpdb->prepare("DELETE FROM $table WHERE `post_id` = $pid AND `meta_key` = %s", $meta_key));
+
+			$this->post_meta_to_insert[] = array(
+				'meta_key' => $meta_key,
+				'meta_value' => $meta_value,
+				'pid' => $pid
+			);*/
 		}
+		/*elseif ($this->is_update_cf($meta_key)){						
+	
+	        $this->wpdb->query($this->wpdb->prepare("DELETE FROM $table WHERE `post_id` = $pid AND `meta_key` = %s", $meta_key));			
+				
+			// previous meta field is not found
+			$this->post_meta_to_insert[] = array(
+				'meta_key' => $meta_key,
+				'meta_value' => $meta_value,
+				'pid' => $pid
+			);
+			
+		}*/
+
+	}
+
+	/**
+	* 
+	* Is update allowed according to import record matching setting
+	*
+	*/
+	protected function is_update_cf( $meta_key ){
+
+		if ($this->options['update_all_data'] == 'yes') return true;
+
+		if ( ! $this->options['is_update_custom_fields'] ) return false;			
+
+		if ($this->options['update_custom_fields_logic'] == "full_update") return true;
+		if ($this->options['update_custom_fields_logic'] == "only" and ! empty($this->options['custom_fields_list']) and is_array($this->options['custom_fields_list']) and in_array($meta_key, $this->options['custom_fields_list']) ) return true;
+		if ($this->options['update_custom_fields_logic'] == "all_except" and ( empty($this->options['custom_fields_list']) or ! in_array($meta_key, $this->options['custom_fields_list']) )) return true;
+		
+		return false;
+
+	}	
+
+	protected function associate_terms($pid, $assign_taxes, $tx_name, $logger = false){			
+
+		$terms = wp_get_object_terms( $pid, $tx_name );
+		$term_ids = array();        
+
+		if ( ! empty($terms) ){
+			if ( ! is_wp_error( $terms ) ) {				
+				foreach ($terms as $term_info) {
+					$term_ids[] = $term_info->term_taxonomy_id;
+					$this->wpdb->query(  $this->wpdb->prepare("UPDATE {$this->wpdb->term_taxonomy} SET count = count - 1 WHERE term_taxonomy_id = %d", $term_info->term_taxonomy_id) );
+				}				
+				$in_tt_ids = "'" . implode( "', '", $term_ids ) . "'";
+				$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM {$this->wpdb->term_relationships} WHERE object_id = %d AND term_taxonomy_id IN ($in_tt_ids)", $pid ) );
+			}
+		}
+
+		if (empty($assign_taxes)) return;
+
+		foreach ($assign_taxes as $tt) {
+			$this->wpdb->insert( $this->wpdb->term_relationships, array( 'object_id' => $pid, 'term_taxonomy_id' => $tt ) );
+			$this->wpdb->query( "UPDATE {$this->wpdb->term_taxonomy} SET count = count + 1 WHERE term_taxonomy_id = $tt" );
+		}
+
+		$values = array();
+        $term_order = 0;
+		foreach ( $assign_taxes as $tt )			                        	
+    		$values[] = $this->wpdb->prepare( "(%d, %d, %d)", $pid, $tt, ++$term_order);
+		                					
+
+		if ( $values ){
+			if ( false === $this->wpdb->query( "INSERT INTO {$this->wpdb->term_relationships} (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" ) ){
+				$logger and call_user_func($logger, __('<b>ERROR</b> Could not insert term relationship into the database', 'pmxi_plugin') . ': '. $this->wpdb->last_error);
+				$logger and PMXI_Plugin::$session['pmxi_import']['errors'] = ++PMXI_Plugin::$session->data['pmxi_import']['errors'];
+			}
+		}                        			
+
+		wp_cache_delete( $pid, $tx_name . '_relationships' ); 
+	}
+
+	protected function duplicate_post_meta( $new_id, $id ) {
+
+		$table = _get_meta_table('post');
+		
+		$post_meta_infos = $this->wpdb->get_results("SELECT meta_key, meta_value FROM $table WHERE post_id=$id");
+
+		if (count($post_meta_infos)!=0) {
+			$sql_query_sel = array();
+			$sql_query = "INSERT INTO $table (post_id, meta_key, meta_value) ";
+			foreach ($post_meta_infos as $meta_info) {
+				if ($this->is_update_cf($meta_info->meta_key)){					
+					$meta_key = $meta_info->meta_key;
+					$this->wpdb->query($this->wpdb->prepare("DELETE FROM $table WHERE `post_id` = $new_id AND `meta_key` = %s", $meta_key));
+					$meta_value = addslashes($meta_info->meta_value);
+					$sql_query_sel[]= "SELECT $new_id, '$meta_key', '$meta_value'";
+				}
+			}
+			$sql_query.= implode(" UNION ALL ", $sql_query_sel);
+			$this->wpdb->query($sql_query);
+		}
+	}
+	
+	function pmwi_buf_prices($pid){
+
+		$table = _get_meta_table('post');
+		
+		$post_meta_infos = $this->wpdb->get_results("SELECT meta_key, meta_value FROM $table WHERE post_id=$pid");
+
+		foreach ($post_meta_infos as $meta_info) {
+			if (in_array($meta_info->meta_key, array('_regular_price', '_sale_price', '_sale_price_dates_from', '_sale_price_dates_from', '_sale_price_dates_to', '_price'))){
+				$this->pushmeta($pid, $meta_info->meta_key . '_tmp', $meta_info->meta_value);				
+			}
+		}
+
+		//$this->executeSQL();
+
+	}
+
+	function pmwi_update_prices($pid){
+
+		$table = _get_meta_table('post');
+		
+		$post_meta_infos = $this->wpdb->get_results("SELECT meta_key, meta_value FROM $table WHERE post_id=$pid");
+
+		foreach ($post_meta_infos as $meta_info) {
+			if (in_array($meta_info->meta_key, array('_regular_price_tmp', '_sale_price_tmp', '_sale_price_dates_from_tmp', '_sale_price_dates_from_tmp', '_sale_price_dates_to_tmp', '_price_tmp'))){
+				$this->pushmeta($pid, str_replace('_tmp', '', $meta_info->meta_key), $meta_info->meta_value);
+				delete_post_meta( $pid, $meta_info->meta_key );
+			}
+		}
+
+		//$this->executeSQL();
 
 	}
 	
@@ -1012,7 +1165,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			);
 
 			if ( in_array( $attribute_name, $reserved_terms ) ) {
-				$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: Slug “%s” is not allowed because it is a reserved term. Change it, please.', 'pmxi_plugin'), wc_attribute_taxonomy_name( $attribute_name )));
+				$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: Slug “%s” is not allowed because it is a reserved term. Change it, please.', 'pmxi_plugin'), wc_attribute_taxonomy_name( $attribute_name )));
 			}			
 			else{
 				// Register the taxonomy now so that the import works!
@@ -1044,11 +1197,11 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 					set_transient( 'wc_attribute_taxonomies', $attribute_taxonomies );
 					apply_filters( 'woocommerce_attribute_taxonomies', $attribute_taxonomies );
 
-					$logger and call_user_func($logger, sprintf(__('<b>CREATED</b>: Taxonomy attribute “%s” have been successfully created.', 'pmxi_plugin'), wc_attribute_taxonomy_name( $attribute_name )));	
+					$logger and call_user_func($logger, sprintf(__('- <b>CREATED</b>: Taxonomy attribute “%s” have been successfully created.', 'pmxi_plugin'), wc_attribute_taxonomy_name( $attribute_name )));	
 
 				}
 				else{
-					$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: Taxonomy “%s” name is more than 32 characters. Change it, please.', 'pmxi_plugin'), $attr_name));
+					$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: Taxonomy “%s” name is more than 32 characters. Change it, please.', 'pmxi_plugin'), $attr_name));
 				}
 
 			}
@@ -1157,87 +1310,64 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 	function array_cartesian( $input ) {
 
-		    $result = array();
+	    $result = array();
 
-		    while ( list( $key, $values ) = each( $input ) ) {
-		        // If a sub-array is empty, it doesn't affect the cartesian product
-		        if ( empty( $values ) ) {
-		            continue;
-		        }
+	    while ( list( $key, $values ) = each( $input ) ) {
+	        // If a sub-array is empty, it doesn't affect the cartesian product
+	        if ( empty( $values ) ) {
+	            continue;
+	        }
 
-		        // Special case: seeding the product array with the values from the first sub-array
-		        if ( empty( $result ) ) {
-		            foreach ( $values as $value ) {
-		                $result[] = array( $key => $value );
-		            }
-		        }
-		        else {
-		            // Second and subsequent input sub-arrays work like this:
-		            //   1. In each existing array inside $product, add an item with
-		            //      key == $key and value == first item in input sub-array
-		            //   2. Then, for each remaining item in current input sub-array,
-		            //      add a copy of each existing array inside $product with
-		            //      key == $key and value == first item in current input sub-array
+	        // Special case: seeding the product array with the values from the first sub-array
+	        if ( empty( $result ) ) {
+	            foreach ( $values as $value ) {
+	                $result[] = array( $key => $value );
+	            }
+	        }
+	        else {
+	            // Second and subsequent input sub-arrays work like this:
+	            //   1. In each existing array inside $product, add an item with
+	            //      key == $key and value == first item in input sub-array
+	            //   2. Then, for each remaining item in current input sub-array,
+	            //      add a copy of each existing array inside $product with
+	            //      key == $key and value == first item in current input sub-array
 
-		            // Store all items to be added to $product here; adding them on the spot
-		            // inside the foreach will result in an infinite loop
-		            $append = array();
-		            foreach( $result as &$product ) {
-		                // Do step 1 above. array_shift is not the most efficient, but it
-		                // allows us to iterate over the rest of the items with a simple
-		                // foreach, making the code short and familiar.
-		                $product[ $key ] = array_shift( $values );
+	            // Store all items to be added to $product here; adding them on the spot
+	            // inside the foreach will result in an infinite loop
+	            $append = array();
+	            foreach( $result as &$product ) {
+	                // Do step 1 above. array_shift is not the most efficient, but it
+	                // allows us to iterate over the rest of the items with a simple
+	                // foreach, making the code short and familiar.
+	                $product[ $key ] = array_shift( $values );
 
-		                // $product is by reference (that's why the key we added above
-		                // will appear in the end result), so make a copy of it here
-		                $copy = $product;
+	                // $product is by reference (that's why the key we added above
+	                // will appear in the end result), so make a copy of it here
+	                $copy = $product;
 
-		                // Do step 2 above.
-		                foreach( $values as $item ) {
-		                    $copy[ $key ] = $item;
-		                    $append[] = $copy;
-		                }
+	                // Do step 2 above.
+	                foreach( $values as $item ) {
+	                    $copy[ $key ] = $item;
+	                    $append[] = $copy;
+	                }
 
-		                // Undo the side effecst of array_shift
-		                array_unshift( $values, $product[ $key ] );
-		            }
+	                // Undo the side effecst of array_shift
+	                array_unshift( $values, $product[ $key ] );
+	            }
 
-		            // Out of the foreach, we can add to $results now
-		            $result = array_merge( $result, $append );
-		        }
-		    }
+	            // Out of the foreach, we can add to $results now
+	            $result = array_merge( $result, $append );
+	        }
+	    }
 
-		    return $result;
-		}
+	    return $result;
+	}
 
 	public function _filter_has_cap_unfiltered_html($caps)
 	{
 		$caps['unfiltered_html'] = true;
 		return $caps;
-	}	
-	
-	function duplicate_post_copy_post_meta_info($new_id, $post, $options = array(), $is_duplicate = false) {
-		$post_meta_keys = get_post_custom_keys($post->ID);
-		$meta_blacklist = array();
-		$meta_keys = array_diff($post_meta_keys, $meta_blacklist);
-
-		foreach ($meta_keys as $meta_key) {
-			$meta_values = get_post_custom_values($meta_key, $post->ID);
-
-			foreach ($meta_values as $meta_value) {
-				$meta_value = maybe_unserialize($meta_value);
-				if ( ! $is_duplicate or $this->is_update_custom_field($existing_meta_keys, $options, $meta_key)) update_post_meta($new_id, $meta_key, $meta_value);
-			}
-		}
-
-		update_post_meta( $post->ID, '_stock_tmp', $tmp = get_post_meta( $post->ID, '_stock', true) );
-		update_post_meta( $post->ID, '_stock', '');
-		update_post_meta( $post->ID, '_regular_price_tmp', $tmp = get_post_meta( $post->ID, '_regular_price', true) );
-		update_post_meta( $post->ID, '_regular_price', '' );
-		update_post_meta( $post->ID, '_price_tmp', $tmp = get_post_meta( $post->ID, '_price', true) );
-		update_post_meta( $post->ID, '_price', '');
-		
-	}	
+	}		
 
 	function auto_cloak_links($import, &$url){
 		
@@ -1304,8 +1434,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 						));
 						$dest->insert();
 					} else {
-						$logger and call_user_func($logger, sprintf(__('<b>WARNING</b>: Unable to create cloaked link for %s', 'pmxi_plugin'), $url));
-						PMXI_Plugin::$session['pmxi_import']['warnings'] = PMXI_Plugin::$session->data['pmxi_import']['warnings']++;
+						$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: Unable to create cloaked link for %s', 'pmxi_plugin'), $url));						
 						$link = NULL;
 					}
 				}
@@ -1327,86 +1456,17 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		if ($options['update_custom_fields_logic'] == "all_except" and ( empty($options['custom_fields_list']) or ! in_array($meta_key, $options['custom_fields_list']) )) return true;
 		
 		return false;
-	}
-
-	// process simple product meta
-	function process_product_meta( $post_id, $post = '' ) {
-
-		$wholesale_price = get_post_meta($post_id, 'pmxi_wholesale_price', true);
-
-		if ( '' !==  $wholesale_price )
-			update_post_meta( $post_id, 'wholesale_price', stripslashes( $wholesale_price ) );
-		else
-			delete_post_meta( $post_id, 'pmxi_wholesale_price' );
-	}
-
-	// process variable product meta
-	function process_product_meta_variable( $post_id ) {
-
-		$product = get_post($post_id);
-
-		if ( $product->post_type == 'product_variation' ) {		
-
-			$wholesale_price = get_post_meta($post_id, 'pmxi_wholesale_price', true);
-
-			if ( '' !==  $wholesale_price )
-				update_post_meta( $post_id, 'wholesale_price', stripslashes( $wholesale_price ) );
-			else
-				delete_post_meta( $post_id, 'pmxi_wholesale_price' );	
-
-			$post_parent = $product->post_parent;			
-
-		}
-		else $post_parent = $post_id;		
-		
-		$children = get_posts( array(
-				    'post_parent' 	=> $post_parent,
-				    'posts_per_page'=> -1,
-				    'post_type' 	=> 'product_variation',
-				    'fields' 		=> 'ids'
-			    ) );
-
-		$lowest_price = '';
-
-		$highest_price = '';
-
-		if ( $children ) {
-
-			foreach ( $children as $child ) {
-
-				$child_price = get_post_meta($child, 'pmxi_wholesale_price', true);
-
-			
-				if ( !$child_price ) continue;
-	
-				// Low price
-				if ( !is_numeric( $lowest_price ) || $child_price < $lowest_price ) $lowest_price = $child_price;
-
-				
-				// High price
-				if ( $child_price > $highest_price )
-					$highest_price = $child_price;
-
-			}
-
-
-		}
-
-		update_post_meta( $post_parent, 'wholesale_price', $lowest_price );
-		update_post_meta( $post_parent, 'min_variation_wholesale_price', $lowest_price );
-		update_post_meta( $post_parent, 'max_variation_wholesale_price', $highest_price );
-
-		
-	}
+	}	
 	
 	function prepare_price( $price ){   
 
-		if ($this->options['disable_prepare_price']) return apply_filters('pmxi_price', $price);
+		return pmwi_prepare_price( $price, $this->options['disable_prepare_price'], $this->options['prepare_price_to_woo_format'] );
+		
+	}
 
-	    $price = str_replace(",", ".", preg_replace("/[^0-9\.,]/","", $price));       	   	    
+	function adjust_price( $price, $field ){
 
-	    $price = str_replace(",", ".", str_replace(".", "", preg_replace("%\.([0-9]){1,2}?$%", ",$0", $price)));	    
-	    
-	    return ("" != $price) ? apply_filters('pmxi_price', number_format( (double) $price, 2, '.', '')) : "";
+		return pmwi_adjust_price( $price, $field, $this->options);
+		
 	}
 }

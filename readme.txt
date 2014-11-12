@@ -2,7 +2,7 @@
 Contributors: soflyy
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 1.1.6
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import
@@ -72,6 +72,14 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 1. The WooCommerce add-on.
 
 == Changelog ==
+
+= 1.2.0 = 
+* IMPORTANT: WP All Import v4 (3.2.0) is a MAJOR update. Read this post before upgrading: [http://www.wpallimport.com/2014/11/free-version-wordpress-org-update-information] (http://www.wpallimport.com/2014/11/free-version-wordpress-org-update-information)
+* speed up the import of taxonomies/categories
+* updated design
+* new option - adjust prices (mark up, mark down, convert currency)
+* added preview prices feature
+* fixed importing of menu order
 
 = 1.1.6 =
 * fixed saving shipping class option

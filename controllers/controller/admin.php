@@ -40,14 +40,14 @@ abstract class PMWI_Controller_Admin extends PMWI_Controller {
 		if ( ! is_a($wp_styles, 'WP_Styles'))
 			$wp_styles = new WP_Styles();
 				
-		wp_enqueue_style('pmwi-admin-style', PMWI_FREE_ROOT_URL . '/static/css/admin.css');
+		wp_enqueue_style('pmwi-admin-style', PMWI_ROOT_URL . '/static/css/admin.css');
 		
 		if ( version_compare(get_bloginfo('version'), '3.8-RC1') >= 0 ){
-			wp_enqueue_style('pmwi-admin-style-wp-3.8', PMWI_FREE_ROOT_URL . '/static/css/admin-wp-3.8.css');
+			wp_enqueue_style('pmwi-admin-style-wp-3.8', PMWI_ROOT_URL . '/static/css/admin-wp-3.8.css');
 		}
 
-		wp_enqueue_script('pmwi-script', PMWI_FREE_ROOT_URL . '/static/js/pmwi.js', array('jquery'));		
-		wp_enqueue_script('pmwi-admin-script', PMWI_FREE_ROOT_URL . '/static/js/admin.js', array('jquery', 'jquery-ui-core', 'jquery-ui-resizable', 'jquery-ui-dialog', 'jquery-ui-datepicker', 'jquery-ui-draggable', 'jquery-ui-droppable', 'pmxi-admin-script'));
+		wp_enqueue_script('pmwi-script', PMWI_ROOT_URL . '/static/js/pmwi.js', array('jquery'));		
+		wp_enqueue_script('pmwi-admin-script', PMWI_ROOT_URL . '/static/js/admin.js', array('jquery', 'jquery-ui-core', 'jquery-ui-resizable', 'jquery-ui-dialog', 'jquery-ui-datepicker', 'jquery-ui-draggable', 'jquery-ui-droppable', 'pmxi-admin-script'));
 		
 		global $woocommerce;
 

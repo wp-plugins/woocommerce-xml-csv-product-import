@@ -1,4 +1,5 @@
-.pmxi_plugin #existing_meta_keys, .pmxi_plugin #existing_attributes{
+.wpallimport-plugin #existing_meta_keys, 
+.wpallimport-plugin #existing_attributes{
 	margin-bottom: 10px;
 	padding: 2px;
 	width: 580px;
@@ -9,93 +10,98 @@
 	top: -2px;
 	width: 50px !important;
 }
-.pmxi_plugin .options_group{
+.wpallimport-plugin .options_group{
 	padding-bottom: 10px;
+	padding-top: 10px;
 	/*overflow: hidden;*/
 }
-.pmxi_plugin .options_group .input{
+.wpallimport-plugin .options_group .input{
 	padding-left: 8px;
-	margin-top: 10px;
+	margin-top: 10px;	
 }
-.pmxi_plugin .options_group .input input{
+.wpallimport-plugin .options_group .input input{
 	width:auto !important;
 }
-.pmxi_plugin .options_group .input label{
+.wpallimport-plugin .options_group .input label{
+	/*margin-left: 0;
 	padding-left: 7px;
 	position: relative;
-	top: -2px;
-	width: auto;
-	margin-left: 0;
+	top: -3px;
+	width: auto;*/
 }
-.pmxi_plugin .woocommerce_options_panel label, .pmxi_plugin .woocommerce_options_panel legend{
+.wpallimport-plugin .woocommerce_options_panel label, .wpallimport-plugin .woocommerce_options_panel legend{
 	margin: 0;
 }
-.pmxi_plugin .woocommerce_options_panel p.form-field{
+.wpallimport-plugin .woocommerce_options_panel p.form-field{
 	padding-left: 20px !important;
 }
-.pmxi_plugin #woocommerce-product-data{
+.wpallimport-plugin .woocommerce_options_panel p.form-field.wpallimport-radio-field{	
+	padding-bottom: 0 !important;
+	padding-top: 0 !important;
+	margin-top: 0 !important;
+}
+.wpallimport-plugin #woocommerce-product-data{
 	overflow: hidden;	
 }
-.pmxi_plugin #woocommerce-product-data .hndle{
+.wpallimport-plugin #woocommerce-product-data .hndle{
 	margin-bottom: 0px;
 	cursor: default;
 	padding: 10px;
 	overflow: hidden;
 }
-.pmxi_plugin .main_choise{
-	float: left;
-	margin-right: 5px;
-	padding: 5px 0;
+.wpallimport-plugin .set_with_xpath{	
+	clear: both;
 }
-.pmxi_plugin .set_with_xpath{
-	/*padding-left:20px; */
-	position:absolute; 
-	left:0px; 
-	top:-15px;
+.wpallimport-plugin .set_with_xpath .wpallimport-slide-content{
+	padding-left: 20px; 
+	/*padding-top: 10px;*/
+	display: block;
+	overflow: hidden;
+	margin: 5px 0;
 }
-.pmxi_plugin .in_variations select, .pmxi_plugin .is_visible select, .pmxi_plugin .is_taxonomy select{
+.wpallimport-plugin .in_variations select, .wpallimport-plugin .is_visible select, .wpallimport-plugin .is_taxonomy select{
 	float:none !important;
 }
-.pmxi_plugin .in_variations, .pmxi_plugin .is_visible, .pmxi_plugin .is_taxonomy, .pmxi_plugin .is_create_taxonomy{
+.wpallimport-plugin .in_variations, .wpallimport-plugin .is_visible, .wpallimport-plugin .is_taxonomy, .wpallimport-plugin .is_create_taxonomy{
 	display: block;
 	float: left;
 	margin-top: 10px;
 	margin-left: 5px;	
 }
-.pmxi_plugin .in_variations label, .pmxi_plugin .is_visible label, .pmxi_plugin .is_taxonomy label{
+.wpallimport-plugin .in_variations label, .wpallimport-plugin .is_visible label, .wpallimport-plugin .is_taxonomy label{
 	width: 80px;
 }
-.pmxi_plugin .is_create_taxonomy label{
+.wpallimport-plugin .is_create_taxonomy label{
 	width: 115px;
 }
-.pmxi_plugin .panel{
+.wpallimport-plugin .panel{
 	background: #fff;
 	padding-bottom: 20px;
 	min-height: 200px;
 }
-.pmxi_plugin .wc-tabs{
-	width:152px !important;
+.wpallimport-plugin .wc-tabs{
+	/*width:152px !important;*/
 }
-.pmxi_plugin ul.wc-tabs li.active a{
+.wpallimport-plugin ul.wc-tabs li.active a{
 	/*width:120px !important;*/
 	background-color: #fff !important;
 }
-.pmxi_plugin .fleft{
+.wpallimport-plugin .fleft{
 	float: left;
 }
-.pmxi_plugin #woocommerce_attributes{
+.wpallimport-plugin #woocommerce_attributes{
 	padding-left: 2%;
 	padding-top: 10px;
 	width:98% !important;
 }
-.pmxi_plugin .variations_tree{
+.wpallimport-plugin .variations_tree{
 	font-family: sans-serif;
 	/*position: absolute;
 	width:100%;
 	top:-155px;*/
 }
 
-.pmxi_plugin .variations_tag {	
+.wpallimport-plugin .variations_tag {	
 	background-color: #fff;	
 	/*position: fixed;	*/
 	margin: 5px;			
@@ -110,17 +116,27 @@
 	-moz-box-shadow:    0px 0px 15px #ccc;
 	box-shadow:         0px 0px 15px #ccc;
 }
-.pmxi_plugin .options .variations_tag{
+.wpallimport-plugin .options .variations_tag{
 	margin-top: 0px;		
 }
-	.pmxi_plugin .variations_tag .title {
+	.wpallimport-plugin .variations_tag .title {
 		font-weight: bold;
 		padding: 6px 8px;
 		color: #464646;
-		background: #DFDFDF;
+		background: #fff;
 		font-size: 12px;
+		text-align: center;
+		border: 1px solid #ddd;
+		border-bottom: 1px solid #ddd; 
+		-moz-border-radius-topleft: 4px;
+		-webkit-border-top-left-radius: 4px;
+		 border-top-left-radius: 4px;
+		-moz-border-radius-topright: 4px;
+		-webkit-border-top-right-radius: 4px;
+		border-top-right-radius: 4px;
+		overflow: hidden;
 	}
-	.pmxi_plugin .variations_tag .xml {
+	.wpallimport-plugin .variations_tag .xml {
 		max-height: 300px;
 		overflow: auto;
 		border: 1px solid #DFDFDF;
@@ -132,69 +148,113 @@
 		-webkit-border-bottom-left-radius: 4px;
 		border-bottom-left-radius: 4px;
 	}
-	.pmxi_plugin .variations_tag .navigation {
-		float: right;
-		margin: -2px -12px 0 0;
-	}
-		.pmxi_plugin .variations_tag .navigation a,
-		.pmxi_plugin .variations_tag .navigation span {
+		.wpallimport-plugin .variations_tag .navigation{
+			line-height: 30px;
+		}
+		.wpallimport-plugin .variations_tag .navigation a,
+		.wpallimport-plugin .variations_tag .navigation span{
 			font-weight: bold;
 			padding: 0 12px;
 			text-decoration: none;
+			height: 25px;
 		}
+		.wpallimport-plugin .variations_tag .navigation span.out_of{
+			color:#777;
+			margin-left: 0;
+		}
+		.wpallimport-plugin .variations_tag .navigation .previous_element{
+			float: left;
+			background: url('../img/left_btn.png') 5% 0 no-repeat;
+			margin-top: 4px;
+		}
+		.wpallimport-plugin .variations_tag .navigation .next_element{	
+			float: right;
+			background: url('../img/right_btn.png') 95% 0 no-repeat;
+			margin-top: 4px;
+		}		
 
 @media screen and (max-height: 700px) {  
-	.pmxi_plugin .variations_tag {
+	.wpallimport-plugin .variations_tag {
   		max-height:300px;
   	}
-  	.pmxi_plugin .variations_tag .xml {
+  	.wpallimport-plugin .variations_tag .xml {
   		max-height: 265px;
   	}
 }
-.pmxi_plugin .use_parent{
+.wpallimport-plugin .use_parent{
 	display: inline-block;	
 	position: relative;
 }
 
-.pmxi_plugin #woocommerce_attributes label{
+.wpallimport-plugin table.custom-params label{
 	font-size: 12px;
-	position: relative;
-	top:-2px;
 	left: 3px;
+	margin-left: 0 !important;
+	padding-left: 0 !important;
+	position: relative;
+	top: -4px !important;
 }
-
-.pmxi_plugin #variations_tag{
+.wpallimport-plugin table.custom-params input[type=text]{
+	font-size: 14px;
+	height: 40px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-khtml-border-radius: 4px;
+	-webkit-border-radius: 4px;	
+	color: #000;
+	font-size: 15px;
+	position: relative;
+	top: 0;
+}
+.wpallimport-plugin table.custom-params input[type=checkbox]{
+	margin: 0 !important;
+}
+.wpallimport-plugin #variations_tag{
 	clear: both;	
 	position: fixed;
-	top:335px;
-	right:30%;	
-	width:300px;	
+	top: 335px;
+	right: 30%;	
+	width: 300px;	
 	display: none;
 	z-index: 1;
 }
-.pmxi_plugin .variations_tag .title{
+.wpallimport-plugin .variations_tag .title{
 	cursor: move;
 }
-.pmxi_plugin .variations_tag{
+.wpallimport-plugin .variations_tag{
 	z-index: 999;
 }
-.pmxi_plugin .load_options{
+.wpallimport-plugin .variations_tag .xml{
+	padding-left: 20px;
+}
+.wpallimport-plugin .load_options{
 	float: right;
 	height: 0;
 	position: relative;
 	right: 10px;
 	top: -35px;
 }
-.pmxi_plugin  #dialog, .pmxi_plugin .ui-dialog{
+.wpallimport-plugin  #dialog, .wpallimport-plugin .ui-dialog{
 	padding: 0px;
 }
-.pmxi_plugin #variations_console{
-	margin: 0px 15px;
+.wpallimport-plugin #variations_console{
+	clear: both;
+	display: block;
+	margin: 15px 0;
 }
-.pmxi_plugin #toggle_xml_tree{
-	margin: 0px 5px;
+.wpallimport-plugin #variations_console .updated{
+	padding: 10px;
 }
-.pmxi_plugin #close_xml_tree{
+.wpallimport-plugin #toggle_xml_tree{
+	display: block;
+	left: 10px;
+	margin: 5px 10px;
+	position: relative;
+	float: left;
+	width: 120px;
+}
+.wpallimport-plugin #close_xml_tree{
 	display: block;
 	position: absolute;
 	top: -16px;
@@ -204,12 +264,50 @@
 	height:16px;
 
 }
-.pmxi_plugin #variable_product_options img{
-	margin: 4px;
+.wpallimport-plugin #variable_product_options img{
+	margin: 10px 0;
 }
-.pmxi_plugin .highlight{
+.wpallimport-plugin .highlight{
 	background: none repeat scroll 0 0 #CAD2DF;
 	padding: 5px;
 	margin-right: 20px;
 	text-align: center;
+}
+.wpallimport-plugin #regular_price_shedule{
+	line-height: 27px;
+}
+.wpallimport-plugin .options_group .form-field input[type=radio],
+.wpallimport-plugin .options_group .form-field input[type=checkbox]{
+	display: block;
+	float: left;
+	margin: 3px 10px 0 0;
+	position: relative;
+}
+.wpallimport-plugin #add_on_options .form-field label{
+	width: 350px;
+}
+.wpallimport-plugin #woocommerce-product-data .wc-tabs-back{
+	height: 2200px;
+}
+.wpallimport-plugin #woocommerce-product-data .form-field{
+	padding-left: 20px;
+}
+.wpallimport-plugin .pmwi_percentage_prices_note,
+.wpallimport-plugin .pmwi_reduce_prices_note{
+	display: none;
+}
+.wpallimport-plugin .pmwi_adjust_prices{
+	display: none;
+}
+.wpallimport-plugin .pmwi_trigger_adjust_prices{
+	cursor: pointer;
+	width: 330px;
+}
+.wpallimport-plugin .woo-add-on-free-edition-notice{
+	display: none;
+	margin: 10px;
+	padding: 20px;
+	background-color: #eee;
+	border: 1px solid #ddd;
+	text-align:center;
 }

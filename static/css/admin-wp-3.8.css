@@ -1,20 +1,25 @@
-.pmxi_plugin .woocommerce_options_panel .options_group{
+.wpallimport-plugin .woocommerce_options_panel .options_group{
 	overflow: hidden;
 }
-.pmxi_plugin .woocommerce_options_panel input{
-	float: left !important;
+.wpallimport-plugin .woocommerce_options_panel input{
+	/*float: left !important;*/
 }
-.pmxi_plugin .form-table input.tog, .pmxi_plugin .form-table input[type="radio"]{
-	margin-top: 0px !important;
+.wpallimport-plugin .form-table input.tog, 
+.wpallimport-plugin .form-table input[type="radio"]{
+	/*margin-top: 0px !important;*/
 }
-.pmxi_plugin #woocommerce_attributes label{
+/*.wpallimport-plugin #woocommerce_attributes label{
 	top:0px !important;
 	margin-bottom: 10px !important;
-}
-.pmxi_plugin .form-table,.pmxi_plugin .form-table td,.pmxi_plugin .form-table th,.pmxi_plugin .form-table td p,.pmxi_plugin .form-wrap label{
+}*/
+.wpallimport-plugin .form-table,
+.wpallimport-plugin .form-table td,
+.wpallimport-plugin .form-table th,
+.wpallimport-plugin .form-table td p,
+.wpallimport-plugin .form-wrap label{
 	font-size: 12px !important ;
 }
-.pmxi_plugin #close_xml_tree{
+.wpallimport-plugin #close_xml_tree{
 	top:0px;
 	right:0px;
 }

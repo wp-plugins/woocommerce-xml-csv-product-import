@@ -13,7 +13,7 @@ function pmwi_admin_notices() {
 		</p></div>
 		<?php
 
-		deactivate_plugins( PMWI_FREE_ROOT_DIR . '/plugin.php');
+		deactivate_plugins( PMWI_ROOT_DIR . '/plugin.php');
 
 	}
 
@@ -27,11 +27,11 @@ function pmwi_admin_notices() {
 		</p></div>
 		<?php
 		
-		deactivate_plugins( PMWI_FREE_ROOT_DIR . '/plugin.php');
+		deactivate_plugins( PMWI_ROOT_DIR . '/plugin.php');
 		
 	}
 
-	if ( class_exists( 'PMXI_Plugin' ) and ( (version_compare(PMXI_VERSION, '3.3.6') <= 0 or version_compare(PMXI_VERSION, '4.0.0') >= 0 ) and PMXI_EDITION == 'paid' or version_compare(PMXI_VERSION, '3.1.1') <= 0 and PMXI_EDITION == 'free') ) {
+	if ( class_exists( 'PMXI_Plugin' ) and ( (version_compare(PMXI_VERSION, '4.0.0-beta1') < 0 ) and PMXI_EDITION == 'paid' or version_compare(PMXI_VERSION, '3.2.0') < 0 and PMXI_EDITION == 'free') ) {
 		?>
 		<div class="error"><p>
 			<?php printf(
@@ -41,8 +41,21 @@ function pmwi_admin_notices() {
 		</p></div>
 		<?php
 		
-		deactivate_plugins( PMWI_FREE_ROOT_DIR . '/plugin.php');
-	}	
+		deactivate_plugins( PMWI_ROOT_DIR . '/plugin.php');
+	}
+
+	if ( class_exists( 'Woocommerce' ) and defined('WOOCOMMERCE_VERSION') and version_compare(WOOCOMMERCE_VERSION, '2.1') <= 0 ) {
+		?>
+		<div class="error"><p>
+			<?php printf(
+					__('<b>%s Plugin</b>: Please update your WooCommerce to the latest version', 'pmwi_plugin'),
+					PMWI_Plugin::getInstance()->getName()
+			) ?>
+		</p></div>
+		<?php
+		
+		deactivate_plugins( PMWI_ROOT_DIR . '/plugin.php');
+	}
 
 	$input = new PMWI_Input();
 	$messages = $input->get('PMWI_nt', array());

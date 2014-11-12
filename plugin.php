@@ -3,19 +3,19 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
-Version: 1.1.6
+Version: 1.2.0
 Author: Soflyy
 */
 /**
  * Plugin root dir with forward slashes as directory separator regardless of actuall DIRECTORY_SEPARATOR value
  * @var string
  */
-define('PMWI_FREE_ROOT_DIR', str_replace('\\', '/', dirname(__FILE__)));
+define('PMWI_ROOT_DIR', str_replace('\\', '/', dirname(__FILE__)));
 /**
  * Plugin root url for referencing static content
  * @var string
  */
-define('PMWI_FREE_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
+define('PMWI_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
 /**
  * Plugin prefix for making names unique (be aware that this variable is used in conjuction with naming convention,
  * i.e. in order to change it one must not only modify this constant but also rename all constants, classes and functions which
@@ -24,7 +24,7 @@ define('PMWI_FREE_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.1.6');
+define('PMWI_FREE_VERSION', '1.2.0');
 
 define('PMWI_EDITION', 'free');
 
@@ -52,12 +52,12 @@ final class PMWI_Plugin {
 	 * Plugin root dir
 	 * @var string
 	 */
-	const ROOT_DIR = PMWI_FREE_ROOT_DIR;
+	const ROOT_DIR = PMWI_ROOT_DIR;
 	/**
 	 * Plugin root URL
 	 * @var string
 	 */
-	const ROOT_URL = PMWI_FREE_ROOT_URL;
+	const ROOT_URL = PMWI_ROOT_URL;
 	/**
 	 * Prefix used for names of shortcodes, action handlers, filter functions etc.
 	 * @var string
@@ -78,7 +78,7 @@ final class PMWI_Plugin {
 			self::$instance = new self();
 		}
 		return self::$instance;
-	}
+	}	
 
 	/**
 	 * Common logic for requestin plugin info fields
@@ -400,7 +400,7 @@ final class PMWI_Plugin {
 			'multiple_product_type' => 'simple',
 			'single_product_type' => '',			
 			'is_product_virtual' => 'no',
-			'single_product_virtual' => '',			
+			'single_product_virtual' => '',						
 			'is_product_downloadable' => 'no',
 			'single_product_downloadable' => '',			
 			'is_product_enabled' => 'yes',
@@ -428,7 +428,7 @@ final class PMWI_Plugin {
 			'is_product_manage_stock' => 'no',
 			'single_product_manage_stock' => '',
 			'single_product_stock_qty' => '',			
-			'product_stock_status' => 'instock',
+			'product_stock_status' => 'auto',
 			'single_product_stock_status' => '',			
 			'product_allow_backorders' => 'no',
 			'single_product_allow_backorders' => '',			
@@ -493,12 +493,15 @@ final class PMWI_Plugin {
 			'variable_download_limit' => '',
 			'variable_download_expiry' => '',
 			'is_variable_product_virtual' => 'no',
+			'is_variable_product_manage_stock' => 'no',
 			'is_multiple_variable_product_shipping_class' => 'yes',
 			'multiple_variable_product_shipping_class' => '',
 			'single_variable_product_shipping_class' => '',
 			'is_multiple_variable_product_tax_class' => 'yes',
 			'multiple_variable_product_tax_class' => 'parent',
 			'single_variable_product_tax_class' => '',
+			'variable_stock_status' => 'instock',
+			'single_variable_stock_status' => '',				
 			'is_variable_product_downloadable' => 'no',
 			'single_variable_product_downloadable' => '',
 			'variable_attribute_name' => array(),
@@ -521,6 +524,8 @@ final class PMWI_Plugin {
 			'variable_weight_use_parent' => 0,
 			'single_variable_product_virtual' => '',
 			'single_variable_product_virtual_use_parent' => 0,
+			'single_variable_product_manage_stock' => '',
+			'single_variable_product_manage_stock_use_parent' => 0,
 			'variable_dimensions_use_parent' => 0,
 			'variable_image_use_parent' => 0,
 			'single_variable_product_shipping_class_use_parent' => 0,
@@ -533,15 +538,21 @@ final class PMWI_Plugin {
 			'variable_whosale_price' => '',
 			'variable_whosale_price_use_parent' => 0,
 			'disable_auto_sku_generation' => 0,
-			'is_default_attributes' => 1,
+			'is_default_attributes' => 0,
 			'disable_sku_matching' => 1,
-			'disable_prepare_price' => 0,
+			'disable_prepare_price' => 1,
+			'prepare_price_to_woo_format' => 0,
 			'grouping_indicator' => 'xpath',				
 			'custom_grouping_indicator_name' => '',
 			'custom_grouping_indicator_value' => '',
 			'is_update_product_type' => 1,
-			'make_simple_product' => 0,
+			'make_simple_product' => 1,
 			'variable_sku_add_parent' => 0,
+			'set_parent_stock' => 0,
+			'single_product_regular_price_adjust' => '',
+			'single_product_regular_price_adjust_type' => '%',
+			'single_product_sale_price_adjust' => '',
+			'single_product_sale_price_adjust_type' => '%',
 			
 			'is_update_attributes' => 1,
 			'update_attributes_logic' => 'full_update',						
@@ -553,3 +564,4 @@ final class PMWI_Plugin {
 }
 
 PMWI_Plugin::getInstance();	
+

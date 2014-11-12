@@ -2,7 +2,7 @@
  * plugin admin area javascript
  */
 (function($){$(function () {
-	if ( ! $('body.pmxi_plugin').length) return; // do not execute any code if we are not on plugin page
+	if ( ! $('body.wpallimport-plugin').length) return; // do not execute any code if we are not on plugin page
 
 	$('.product_data_tabs').find('a').click(function(){
 		$('.product_data_tabs').find('li').removeClass('active');
@@ -74,11 +74,13 @@
 		});
 
 		if ($('input[name=is_product_manage_stock]:checked').val() == 'no') $('.stock_fields').hide(); else $('.stock_fields').show(); 
+
+		if ($('input[name=is_variable_product_manage_stock]:checked').val() == 'no') $('.variable_stock_fields').hide(); else $('.variable_stock_fields').fadeIn(); 
 		
 		if ($('#link_all_variations').is(':checked')) $('.variations_tab').hide(); else if (is_variable) $('.variations_tab').show();			
 		
 		if ($('#xml_matching_parent').is(':checked') && is_variable) $('#variations_tag').show(); else $('#variations_tag').hide();
-		
+
 		if ( ! is_simple ) {
 			$('.woocommerce_options_panel').find('input, select').attr('disabled','disabled'); 
 			$('.upgrade_template').show();
@@ -101,7 +103,7 @@
 		change_depencies();
 		$('.wc-tabs').find('li:visible:first').find('a').click();
 	});
-	$('#_virtual, #_downloadable, input[name=is_product_manage_stock]').click(change_depencies);
+	$('#_virtual, #_downloadable, input[name=is_product_manage_stock], input[name=is_variable_product_manage_stock]').click(change_depencies);
 	$('input[name=is_multiple_product_type]').click(function(){
 		change_depencies();
 		$('.wc-tabs').find('li:visible:first').find('a').click();
@@ -148,7 +150,7 @@
 	});
 
 	$('#_variable_downloadable').click(function(){
-		if ($(this).is(':checked')) $('#variable_downloadable').show(); else $('#variable_downloadable').hide();
+		if ($(this).is(':checked')) $('.variable_downloadable').show(); else $('.variable_downloadable').hide();
 	});	
 
 	var variation_xpath = $('#variations_xpath').val();
@@ -176,34 +178,6 @@
 		var $goto_element =  $('#goto_variation_element');
 		var $variation_tagno = 0;
 		
-		// tag preview
-		/*$.fn.variation_tag = function () {
-			this.each(function () {
-				var $tag = $(this);
-				$tag.xml('dragable');
-				var tagno = parseInt($tag.find('input[name="tagno"]').val());
-				var parent_tagno = parseInt($parent_tag.find('input[name="tagno"]').val());
-				console.log(parent_tagno);
-				$tag.find('.navigation a').click(function () {
-					tagno += '#variation_prev' == $(this).attr('href') ? -1 : 1;
-					$tag.addClass('loading').css('opacity', 0.7);
-										
-					$('#variations_console').load('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno, parent_tagno: parent_tagno}, function () {
-						var $indicator = $('<span />').insertBefore($tag);						
-						$xml.variation_tag();
-					});
-
-					$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: tagno, parent_tagno: parent_tagno}, function (data) {
-						var $indicator = $('<span />').insertBefore($tag);
-						$tag.replaceWith(data);
-						$indicator.next().tag().prevObject.remove();
-					}, 'html');
-					return false;
-				});
-			});
-			return this;
-		};	*/	
-			
 		var variationsXPathChanged = function () {
 			
 			if ($input.val() == $input.data('checkedValue')) return;					
@@ -212,8 +186,8 @@
 			$input.attr('readonly', true).unbind('change', variationsXPathChanged).data('checkedValue', $input.val());
 			
 			var parent_tagno = parseInt($('.tag').find('input[name="tagno"]').val());
-
-			$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations', {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function (data) {
+			
+			$.post('admin.php?page=pmxi-admin-import&action=evaluate_variations' +  ((typeof import_id != "undefined") ? '&id=' + import_id : '') , {xpath: $input.val(), tagno: $variation_tagno, parent_tagno: parent_tagno}, function (data) {
 				$('#variations_console').html(data.html);
 				$input.attr('readonly', false);			
 				$xml.xml('dragable');
@@ -221,7 +195,8 @@
 			}, 'json');
 		};
 
-		$xml.find('.navigation a').live('click', function () {
+		$xml.find('.navigation a').live('click', function (e) {
+			e.preventDefault();
 			$variation_tagno += '#variation_prev' == $(this).attr('href') ? -1 : 1;
 			$input.data('checkedValue', '');
 			variationsXPathChanged();
@@ -247,13 +222,15 @@
 	$('.variation_attributes, #woocommerce_attributes').find('label').live({
         mouseenter:
            function()
-           {           	
-           	if ( "" == $(this).attr('for')){
-				var counter = $('.variation_attributes').find('.form-field').length;
-				$(this).parents('span:first').find('input').attr('id', $(this).parents('span:first').find('input').attr('name') + '_' + counter);
-				$(this).attr('for', $(this).parents('span:first').find('input').attr('id'));
-			}
-           },
+            {           	
+	           	if ( "" == $(this).attr('for') )
+	           	{
+					var counter = $(this).parents('table:first').find('tr.form-field:visible').length;
+					
+					$(this).parents('span:first').find('input').attr('id', $(this).parents('span:first').find('input').attr('name').replace('[]','') + '_' + counter );
+					$(this).attr('for', $(this).parents('span:first').find('input').attr('id'));
+				}
+            },
         mouseleave:
            function()
            {
@@ -285,6 +262,41 @@
 		}
 		else
 			alert('At first, you should add minimum one attribute on the "Attributes" tab.');
+	});
+
+	$('.pmwi_adjust_type').change(function(){
+		if ($(this).val() == '%'){
+			$(this).parents('.form-field:first').find('.pmwi_reduce_prices_note').hide();
+			$(this).parents('.form-field:first').find('.pmwi_percentage_prices_note').show();
+		}
+		else{
+			$(this).parents('.form-field:first').find('.pmwi_reduce_prices_note').show();
+			$(this).parents('.form-field:first').find('.pmwi_percentage_prices_note').hide();	
+		}
+	}).change();
+
+	if ($('input[name=matching_parent]:checked').val() == 'first_is_parent_id' || $('input[name=matching_parent]:checked').val() == 'first_is_variation'){
+		$('.set_parent_stock_option').slideDown();
+	}
+	else{
+		$('.set_parent_stock_option').slideUp();
+	}
+
+	$('input[name=matching_parent]').click(function(){
+		if ($(this).val() == 'first_is_parent_id' || $(this).val() == 'first_is_variation'){
+			$('.set_parent_stock_option').slideDown();
+		}
+		else{
+			$('.set_parent_stock_option').slideUp();
+		}
+	});
+
+	$('.pmwi_trigger_adjust_prices').click(function(){
+		if ($(this).find('span').html() == '-')
+			$(this).find('span').html('+');
+		else
+			$(this).find('span').html('-');
+		$('.pmwi_adjust_prices').slideToggle();
 	});
 
 });})(jQuery);
