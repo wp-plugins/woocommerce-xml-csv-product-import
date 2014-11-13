@@ -28,11 +28,11 @@ Why use the WooCommerce add-on for WP All Import?
  - Supports files of practically unlimited size by automatically splitting them into chunks. Import 200Mb+ product catalogs with ease, even on shared hosting. 
 
 = WooCommerce Add-On Professional Edition =
-[youtube http://www.youtube.com/watch?v=7xL4RGT-JRc]
+[youtube http://www.youtube.com/watch?v=7kCmESmKGro]
 
 The professional edition of *WP All Import + the WooCommerce add-on* is a paid upgrade that includes premium support and adds the following features:
 
-* [In-depth support for Variable products](http://www.wpallimport.com/documentation/woocommerce/variable-products/) - example CSV files, ability to import variations from properly formatted XML, and much more.
+* [In-depth support for Variable products](http://www.wpallimport.com/documentation/woocommerce/variable-products/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=woocommerce) - example CSV files, ability to import variations from properly formatted XML, and much more.
 
 * Import External/Affiliate products
 
@@ -46,7 +46,7 @@ The professional edition of *WP All Import + the WooCommerce add-on* is a paid u
 
 * Get access to our customer portal with documentation and tutorials, and e-mail technical support.
 
-[Upgrade to the professional edition of WP All Import + the WooCommerce add-on now.](http://www.wpallimport.com/woocommerce-product-import "WooCommerce XML & CSV Import")
+[Upgrade to the professional edition of WP All Import + the WooCommerce add-on now.](http://www.wpallimport.com/woocommerce-product-import?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=woocommerce "WooCommerce XML & CSV Import")
 
 You need the WooCommerce add-on if you need to:
 
@@ -130,4 +130,4 @@ We do try to handle support for our free version users at the following e-mail a
 
 E-mail: support@wpallimport.com
 
-Support for free version customers is not guaranteed and based on ability. For premium support, [purchase WP All Import and the WooCommerce add-on.](http://www.wpallimport.com/upgrade-to-pro)
+Support for free version customers is not guaranteed and based on ability. For premium support, [purchase WP All Import and the WooCommerce add-on.](http://www.wpallimport.com/upgrade-to-pro?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=woocommerce)
