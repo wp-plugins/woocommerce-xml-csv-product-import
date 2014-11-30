@@ -5,7 +5,7 @@ Tested up to: 4.0
 Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import
+Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import, csv import, import csv, xml import, import xml, woocommerce csv importer, woocommerce xml importer, csv importer, csv import suite
 
 Easily import products from any XML or CSV file to WooCommerce with the WooCommerce add-on for WP All Import.
 
@@ -20,11 +20,13 @@ The left side of the plugin looks just like WooCommerce, and the right side disp
 
 **Drag & drop the data from your XML or CSV into the WooCommerce fields to import it.**
 
-It is so intuitive it is almost like manually adding a product in WooCommerce.
+The importer is so intuitive it is almost like manually adding a product in WooCommerce.
 
-Why use the WooCommerce add-on for WP All Import?
+WooCommerce CSV imports? WooCommerce XML imports? They are EASY with WP All Import.
 
- - Supports files in any format and structure. There are no requirements that the data in your file be organized in a certain way.
+Here's why you should use the WooCommerce add-on for WP All Import?
+
+ - Supports files in any format and structure. There are no requirements that the data in your file be organized in a certain way. WooCommerce CSV imports are easy, no matter the structure of your file. WooCommerce XML imports are flexible and work with any XML file.
  - Supports files of practically unlimited size by automatically splitting them into chunks. Import 200Mb+ product catalogs with ease, even on shared hosting. 
 
 = WooCommerce Add-On Professional Edition =
@@ -53,6 +55,14 @@ You need the WooCommerce add-on if you need to:
 *   Import XML to WooCommerce
 *   Import CSV to WooCommerce
 *   Are frustrated with the limitations of the official WooThemes Product CSV Import Suite
+
+= WooCommerce CSV Imports =
+
+Of course, XML files can have complex structures, but for CSV files, you can easily edit them and change the column names.
+
+When importing CSV files, you should use UTF-8 encoding (which is very standard) if you are having any trouble with CSV imports containing special characters. But other than that, there are no special requirements.
+
+This importer is the best option for WooCommerce CSV import tasks - our importer is extremely flexible when doing CSV imports because you don't need to edit your CSV files to import them to WooCommerce. WP All Import can import ANY CSV file to WooCommerce. You don't need to layout your data in a specific way, and you don't need your CSV to have specific column names. WP All Import's drag & drop interface provides you with a visual way to map the columns in your CSV file to the appropriate fields in WooCommerce.
 
 == Installation ==
 
