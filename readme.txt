@@ -24,7 +24,7 @@ The importer is so intuitive it is almost like manually adding a product in WooC
 
 WooCommerce CSV imports? WooCommerce XML imports? They are EASY with WP All Import.
 
-Here's why you should use the WooCommerce add-on for WP All Import?
+Here's why you should use the WooCommerce add-on for WP All Import:
 
  - Supports files in any format and structure. There are no requirements that the data in your file be organized in a certain way. WooCommerce CSV imports are easy, no matter the structure of your file. WooCommerce XML imports are flexible and work with any XML file.
  - Supports files of practically unlimited size by automatically splitting them into chunks. Import 200Mb+ product catalogs with ease, even on shared hosting. 
