@@ -1,5 +1,5 @@
 === Import Products from any XML or CSV to WooCommerce ===
-Contributors: soflyy
+Contributors: soflyy, wpallimport 
 Requires at least: 3.5
 Tested up to: 4.1
 Stable tag: 1.2.0
