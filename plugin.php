@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
-Version: 1.2.0
+Version: 1.2.1
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.2.0');
+define('PMWI_FREE_VERSION', '1.2.1');
 
 define('PMWI_EDITION', 'free');
 
@@ -224,6 +224,8 @@ final class PMWI_Plugin {
 		if (preg_match('%^' . preg_quote(str_replace('_', '-', self::PREFIX), '%') . '([\w-]+)$%', $page)) {
 			$this->adminDispatcher($page, strtolower($input->getpost('action', 'index')));
 		}			
+		add_filter('plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
+
 	}
 
 	/**
@@ -281,7 +283,7 @@ final class PMWI_Plugin {
 				);
 				add_filter('current_screen', array($this, 'getAdminCurrentScreen'));
 				add_filter('admin_body_class', create_function('', 'return "' . PMWI_Plugin::PREFIX . 'plugin";'));
-
+				
 				$controller = new $controllerName();
 				if ( ! $controller instanceof PMWI_Controller_Admin) {
 					throw new Exception("Administration page `$page` matches to a wrong controller type.");
@@ -389,6 +391,19 @@ final class PMWI_Plugin {
 		update_option($option_name, $options_default);		
 
 	}		
+
+	public function plugin_row_meta($links, $file)
+	{
+		if ( $file == plugin_basename( __FILE__ ) ) {
+			$row_meta = array(
+				'pro'    => '<a href="http://www.wpallimport.com/woocommerce-product-import/" target="_blank" title="' . esc_attr( __( 'WP All Import - WooCommerce Add-On Pro Version', 'pmxi_plugin' ) ) . '">' . __( 'Pro Version', 'pmxi_plugin' ) . '</a>',				
+			);
+
+			return array_merge( $links, $row_meta );
+		}
+
+		return (array) $links;
+	}
 
 	/**
 	 * Method returns default import options, main utility of the method is to avoid warnings when new

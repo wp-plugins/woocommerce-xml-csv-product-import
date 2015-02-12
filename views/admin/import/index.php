@@ -51,9 +51,7 @@
 								</h3>
 								<div class="clear"></div>
 								<div class="inside">
-									<div class="panel-wrap product_data">
-
-										<div class="wc-tabs-back"></div>
+									<div class="panel-wrap product_data">										
 
 										<ul style="" class="product_data_tabs wc-tabs">
 

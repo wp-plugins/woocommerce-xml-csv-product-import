@@ -90,9 +90,10 @@
 	float: left;
 }
 .wpallimport-plugin #woocommerce_attributes{
-	padding-left: 2%;
+	/*padding-left: 2%;*/
+	float: right !important;
 	padding-top: 10px;
-	width:98% !important;
+	width:75% !important;
 }
 .wpallimport-plugin .variations_tree{
 	font-family: sans-serif;
@@ -307,7 +308,17 @@
 	display: none;
 	margin: 10px;
 	padding: 20px;
-	background-color: #eee;
-	border: 1px solid #ddd;
+	background-color: #FFB8B8;
+	border: 1px solid #FF8383;
 	text-align:center;
+}
+.wpallimport-plugin .upgrade_woo_link{
+	color: #000 !important;
+	font-size: 1.3em;
+	text-decoration: underline !important;
+}
+.wpallimport-plugin .animate_upgrade{
+	position: relative;
+	z-index: 9999999;
+	display: block;
 }

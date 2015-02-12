@@ -299,4 +299,21 @@
 		$('.pmwi_adjust_prices').slideToggle();
 	});
 
+	$('.form-field, .main_choise').live('click', function(){
+		if ($(this).find('input:first').attr('disabled') == 'disabled'){
+			var $el = $(".upgrade_template:visible"),
+		        x = 100,
+		        originalColor = $el.css("background"),
+		        i = 2; //counter
+
+		    (function loop() { //recurisve IIFE
+		        $el.css("background", "#FF8383");    
+		        setTimeout(function () {
+		            $el.css("background", originalColor);
+		            if (--i) setTimeout(loop, x); //restart loop
+		        }, x);
+		    }());			
+		}
+	});
+
 });})(jQuery);
