@@ -116,7 +116,7 @@
 		</table>
 	</div>
 	<div class="options_group show_if_variable">
-		<p class="form-field wpallimport-radio-field" style="padding-left: 0 !important;">
+		<p class="form-field wpallimport-radio-field" style="padding-left: 10px !important;">
 			<input type="hidden" name="link_all_variations" value="0" />
 			<input type="checkbox" id="link_all_variations" name="link_all_variations" value="1" <?php echo $post['link_all_variations'] ? 'checked="checked"' : '' ?>/>
 			<label style="width: 100px;" for="link_all_variations"><?php _e('Link all variations', 'pmxi_plugin') ?></label>

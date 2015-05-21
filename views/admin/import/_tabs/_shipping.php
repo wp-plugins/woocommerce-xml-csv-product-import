@@ -24,15 +24,14 @@
 			<div class="switcher-target-multiple_product_shipping_class_yes set_with_xpath">
 				<span class="wpallimport-slide-content" style="padding-left:0;">
 					<?php
-						$classes = get_the_terms( 0, 'product_shipping_class' );														
-
+					
 						$args = array(
 							'taxonomy' 			=> 'product_shipping_class',
 							'hide_empty'		=> 0,
 							'show_option_none' 	=> __( 'No shipping class', 'woocommerce' ),
 							'name' 				=> 'multiple_product_shipping_class',
 							'id'				=> 'multiple_product_shipping_class',
-							'selected'			=> ( ! empty($post['multiple_product_shipping_class']) ) ? $post['multiple_product_shipping_class'] : '',
+							'selected'			=> ( ! empty($post['multiple_product_shipping_class']) and $post['multiple_product_shipping_class'] > 0 ) ? $post['multiple_product_shipping_class'] : '',
 							'class'				=> 'select short'
 						);
 
