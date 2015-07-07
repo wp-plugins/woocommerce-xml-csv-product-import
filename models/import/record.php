@@ -527,7 +527,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		$is_new_product = empty($articleData['ID']);
 
 		// Get types
-		$product_type 	= empty( $product_types[$i] ) ? 'simple' : sanitize_title( stripslashes( $product_types[$i] ) );
+		$product_type 	= 'simple';
 
 		if ($this->options['update_all_data'] == 'no' and ! $this->options['is_update_product_type'] and ! $is_new_product ){			
 			$product 	  = get_product($pid);
@@ -540,7 +540,10 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		$this->post_meta_to_update = array(); // for bulk UPDATE SQL query
 		$this->post_meta_to_insert = array(); // for bulk INSERT SQL query
 		$this->articleData = $articleData;
-		$this->pushmeta($pid, 'total_sales', '0');
+
+		$total_sales = get_post_meta($pid, 'total_sales', true);
+
+		if ( empty($total_sales)) update_post_meta($pid, 'total_sales', '0');
 
 		$is_downloadable 	= $product_downloadable[$i];
 		$is_virtual 		= $product_virtual[$i];
@@ -683,7 +686,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 					if (empty($attr_name) or in_array($attr_name, $attr_names)) continue;
 
-					$attr_names[] = $attr_name;					
+					$attr_names[] = $attr_name; 
 
 					$is_visible 	= intval( $attr_data['is_visible'][$i] );
 					$is_variation 	= intval( $attr_data['in_variation'][$i] );
@@ -732,20 +735,28 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 						 		$attr_values = array();						 								 		
 						 			
-						 		foreach ($values as $key => $value) {
+						 		foreach ($values as $key => $val) {
 
-						 			$term = term_exists($value, wc_attribute_taxonomy_name( $attr_name ), 0);	
+						 			$value = substr($val, 0, 199);
 
-						 			if ( empty($term) and !is_wp_error($term) ){																																
-										$term = term_exists(htmlspecialchars($value), wc_attribute_taxonomy_name( $attr_name ), 0);	
-										if ( empty($term) and !is_wp_error($term) and intval($attr_data['is_create_taxonomy_terms'][$i])){		
-											
-											$term = wp_insert_term(
-												$value, // the term 
-											  	wc_attribute_taxonomy_name( $attr_name ) // the taxonomy										  	
-											);													
+						 			$term = get_term_by('name', $value, wc_attribute_taxonomy_name( $attr_name ), ARRAY_A);
+
+						 			if ( empty($term) and !is_wp_error($term) ){		
+
+							 			$term = term_exists($value, wc_attribute_taxonomy_name( $attr_name ));							 			
+
+							 			if ( empty($term) and !is_wp_error($term) ){																																
+											$term = term_exists(htmlspecialchars($value), wc_attribute_taxonomy_name( $attr_name ));	
+											if ( empty($term) and !is_wp_error($term) and intval($attr_data['is_create_taxonomy_terms'][$i])){		
+												
+												$term = wp_insert_term(
+													$value, // the term 
+												  	wc_attribute_taxonomy_name( $attr_name ) // the taxonomy										  	
+												);													
+											}
 										}
 									}
+
 									if ( ! is_wp_error($term) )												
 										$attr_values[] = (int) $term['term_taxonomy_id']; 
 
@@ -842,10 +853,24 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			}
 
 			// Update price if on sale
-			if ( $product_sale_price[$i] != '' && $date_to == '' && $date_from == '' ){
-				$this->pushmeta($pid, '_price', (empty($product_sale_price[$i])) ? '' : stripslashes( $product_sale_price[$i] ));						
+
+			if ( $product_sale_price[$i] == '' ){
+
+				if ( ! empty($this->articleData['ID']) and ! $this->is_update_cf('_sale_price') )
+				{
+					$product_sale_price[$i] = get_post_meta($pid, '_sale_price', true);
+					
+				}
+
 			}
-			else{
+
+			if ( $product_sale_price[$i] != '' && $date_to == '' && $date_from == '' ){				
+
+				$this->pushmeta($pid, '_price', (empty($product_sale_price[$i])) ? '' : stripslashes( $product_sale_price[$i] ));						
+				
+			}
+			else{				
+
 				$this->pushmeta($pid, '_price', ($product_regular_price[$i] == "") ? '' : stripslashes( $product_regular_price[$i] ));						
 			}
 
@@ -889,43 +914,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				$this->wpdb->update( $this->wpdb->posts, array('post_parent' => absint( $product_grouping_parent[$i] ) ), array('ID' => $pid));
 				
 			}
-		}	
-
-		// Update parent if grouped so price sorting works and stays in sync with the cheapest child
-		if ( $product_type == 'grouped' || ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0)) {
-
-			$clear_parent_ids = array();													
-
-			if ( $product_type == 'grouped' )
-				$clear_parent_ids[] = $pid;		
-
-			if ( "" != $product_grouping_parent[$i] and absint($product_grouping_parent[$i]) > 0 )
-				$clear_parent_ids[] = absint( $product_grouping_parent[$i] );					
-
-			if ( $clear_parent_ids ) {
-				foreach( $clear_parent_ids as $clear_id ) {
-
-					$children_by_price = get_posts( array(
-						'post_parent' 	=> $clear_id,
-						'orderby' 		=> 'meta_value_num',
-						'order'			=> 'asc',
-						'meta_key'		=> '_price',
-						'posts_per_page'=> 1,
-						'post_type' 	=> 'product',
-						'fields' 		=> 'ids'
-					) );
-					if ( $children_by_price ) {
-						foreach ( $children_by_price as $child ) {
-							$child_price = get_post_meta( $child, '_price', true );							
-							update_post_meta( $clear_id, '_price', $child_price );
-						}
-					}
-
-					// Clear cache/transients
-					//wc_delete_product_transients( $clear_id );
-				}
-			}
-		}	
+		}			
 
 		// Sold Individuall
 		if ( "yes" == $product_sold_individually[$i] ) {
@@ -1066,9 +1055,13 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			if ( isset( $product_download_type[$i] ) )
 				$this->pushmeta($pid, '_download_type', esc_attr( $product_download_type ));	
 				
-		}
+		}				
 
-		
+		// prepare bulk SQL query
+		//$this->executeSQL();
+
+		wc_delete_product_transients($pid);
+				
 	}
 
 	public function make_simple_product($post_parent){
@@ -1229,7 +1222,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
     	}
 		                					
 
-		if ( $values ){			
+		if ( $values ){						
 			if ( false === $this->wpdb->query( "INSERT INTO {$this->wpdb->term_relationships} (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" ) ){
 				$logger and call_user_func($logger, __('<b>ERROR</b> Could not insert term relationship into the database', 'pmxi_plugin') . ': '. $this->wpdb->last_error);				
 			}
@@ -1357,177 +1350,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				}				
 			}
 	 	}
-	}
-
-	function pmwi_link_all_variations($product_id, $options = array()) {
-
-		global $woocommerce;
-
-		@set_time_limit(0);
-
-		$post_id = intval( $product_id );
-
-		if ( ! $post_id ) return 0;
-
-		$variations = array();
-
-		$_product = get_product( $post_id, array( 'product_type' => 'variable' ) );
-
-		$v = $_product->get_attributes();		
-
-		// Put variation attributes into an array
-		foreach ( $_product->get_attributes() as $attribute ) {
-
-			if ( ! $attribute['is_variation'] ) continue;
-
-			$attribute_field_name = 'attribute_' . sanitize_title( $attribute['name'] );
-
-			if ( $attribute['is_taxonomy'] ) {
-				$post_terms = wp_get_post_terms( $post_id, $attribute['name'] );
-				$options = array();
-				foreach ( $post_terms as $term ) {
-					$options[] = $term->slug;
-				}
-			} else {
-				$options = explode( '|', $attribute['value'] );
-			}
-
-			$options = array_map( 'sanitize_title', array_map( 'trim', $options ) );
-
-			$variations[ $attribute_field_name ] = $options;
-		}
-
-		// Quit out if none were found
-		if ( sizeof( $variations ) == 0 ) return 0;
-
-		// Get existing variations so we don't create duplicates
-	    $available_variations = array();
-
-	    foreach( $_product->get_children() as $child_id ) {
-	    	$child = $_product->get_child( $child_id );
-
-	        if ( ! empty( $child->variation_id ) ) {
-	            $available_variations[] = $child->get_variation_attributes();
-
-	            update_post_meta( $child->variation_id, '_regular_price', get_post_meta( $post_id, '_regular_price', true ) );
-				update_post_meta( $child->variation_id, '_sale_price', get_post_meta( $post_id, '_sale_price', true ) );
-				if ( class_exists('woocommerce_wholesale_pricing') ) update_post_meta( $child->variation_id, 'pmxi_wholesale_price', get_post_meta( $post_id, 'pmxi_wholesale_price', true ) );
-				update_post_meta( $child->variation_id, '_sale_price_dates_from', get_post_meta( $post_id, '_sale_price_dates_from', true ) );
-				update_post_meta( $child->variation_id, '_sale_price_dates_to', get_post_meta( $post_id, '_sale_price_dates_to', true ) );
-				update_post_meta( $child->variation_id, '_price', get_post_meta( $post_id, '_price', true ) );
-				update_post_meta( $child->variation_id, '_stock', get_post_meta( $post_id, '_stock', true ) );
-				update_post_meta( $child->variation_id, '_stock_status', get_post_meta( $post_id, '_stock_status', true ) );			
-				update_post_meta( $child->variation_id, '_manage_stock', get_post_meta( $post_id, '_manage_stock', true ) );			
-				update_post_meta( $child->variation_id, '_backorders', get_post_meta( $post_id, '_backorders', true ) );	
-	        }
-	    }	  
-
-		// Created posts will all have the following data
-		$variation_post_data = array(
-			'post_title' => 'Product #' . $post_id . ' Variation',
-			'post_content' => '',
-			'post_status' => 'publish',
-			'post_author' => get_current_user_id(),
-			'post_parent' => $post_id,
-			'post_type' => 'product_variation'
-		);
-		
-		$variation_ids = array();
-		$added = 0;
-		$possible_variations = $this->array_cartesian( $variations );		
-
-		foreach ( $possible_variations as $variation ) {
-
-			// Check if variation already exists
-			if ( in_array( $variation, $available_variations ) )
-				continue;
-
-			$variation_id = wp_insert_post( $variation_post_data );			
-			
-			update_post_meta( $variation_id, '_regular_price', get_post_meta( $post_id, '_regular_price', true ) );
-			update_post_meta( $variation_id, '_sale_price', get_post_meta( $post_id, '_sale_price', true ) );
-			if ( class_exists('woocommerce_wholesale_pricing') ) update_post_meta( $variation_id, 'pmxi_wholesale_price', get_post_meta( $post_id, 'pmxi_wholesale_price', true ) );
-			update_post_meta( $variation_id, '_sale_price_dates_from', get_post_meta( $post_id, '_sale_price_dates_from', true ) );
-			update_post_meta( $variation_id, '_sale_price_dates_to', get_post_meta( $post_id, '_sale_price_dates_to', true ) );
-			update_post_meta( $variation_id, '_price', get_post_meta( $post_id, '_price', true ) );
-			update_post_meta( $variation_id, '_stock', get_post_meta( $post_id, '_stock', true ) );
-			update_post_meta( $variation_id, '_stock_status', get_post_meta( $post_id, '_stock_status', true ) );			
-			update_post_meta( $variation_id, '_manage_stock', get_post_meta( $post_id, '_manage_stock', true ) );			
-			update_post_meta( $variation_id, '_backorders', get_post_meta( $post_id, '_backorders', true ) );			
-			
-
-			$variation_ids[] = $variation_id;
-
-			foreach ( $variation as $key => $value ) {
-				update_post_meta( $variation_id, $key, $value );
-			}
-
-			$added++;
-
-			//do_action( 'product_variation_linked', $variation_id );
-			
-		}		
-
-		wc_delete_product_transients( $post_id );
-
-		return $added;
-	}
-
-
-	function array_cartesian( $input ) {
-
-	    $result = array();
-
-	    while ( list( $key, $values ) = each( $input ) ) {
-	        // If a sub-array is empty, it doesn't affect the cartesian product
-	        if ( empty( $values ) ) {
-	            continue;
-	        }
-
-	        // Special case: seeding the product array with the values from the first sub-array
-	        if ( empty( $result ) ) {
-	            foreach ( $values as $value ) {
-	                $result[] = array( $key => $value );
-	            }
-	        }
-	        else {
-	            // Second and subsequent input sub-arrays work like this:
-	            //   1. In each existing array inside $product, add an item with
-	            //      key == $key and value == first item in input sub-array
-	            //   2. Then, for each remaining item in current input sub-array,
-	            //      add a copy of each existing array inside $product with
-	            //      key == $key and value == first item in current input sub-array
-
-	            // Store all items to be added to $product here; adding them on the spot
-	            // inside the foreach will result in an infinite loop
-	            $append = array();
-	            foreach( $result as &$product ) {
-	                // Do step 1 above. array_shift is not the most efficient, but it
-	                // allows us to iterate over the rest of the items with a simple
-	                // foreach, making the code short and familiar.
-	                $product[ $key ] = array_shift( $values );
-
-	                // $product is by reference (that's why the key we added above
-	                // will appear in the end result), so make a copy of it here
-	                $copy = $product;
-
-	                // Do step 2 above.
-	                foreach( $values as $item ) {
-	                    $copy[ $key ] = $item;
-	                    $append[] = $copy;
-	                }
-
-	                // Undo the side effecst of array_shift
-	                array_unshift( $values, $product[ $key ] );
-	            }
-
-	            // Out of the foreach, we can add to $results now
-	            $result = array_merge( $result, $append );
-	        }
-	    }
-
-	    return $result;
-	}
+	}		
 
 	public function _filter_has_cap_unfiltered_html($caps)
 	{

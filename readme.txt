@@ -2,7 +2,7 @@
 Contributors: soflyy, wpallimport 
 Requires at least: 3.5
 Tested up to: 4.2.2
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import, csv import, import csv, xml import, import xml, woocommerce csv importer, woocommerce xml importer, csv importer, csv import suite
@@ -82,6 +82,9 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 1. The WooCommerce add-on.
 
 == Changelog ==
+
+= 1.2.3 =
+* fixed import total_sales
 
 = 1.2.2 =
 * fixed import stock status for negative qty
