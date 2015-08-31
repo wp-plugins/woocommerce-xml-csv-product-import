@@ -3,6 +3,8 @@ function pmwi_pmxi_custom_field_to_delete($field_to_delete, $pid, $post_type, $o
 
 	if ($field_to_delete === false || $post_type != "product") return $field_to_delete;
 
+	if ($cur_meta_key == 'total_sales') return false;
+
 	// Do not update attributes
 	if ($options['update_all_data'] == 'no' and ! $options['is_update_attributes'] and (in_array($cur_meta_key, array('_default_attributes', '_product_attributes')) or strpos($cur_meta_key, "attribute_") === 0)) return false;
 	

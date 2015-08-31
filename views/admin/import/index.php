@@ -37,7 +37,7 @@
 												<a href="#help" class="wpallimport-help" style="top: -1px;" title="<?php _e('The value of presented XPath should be one of the following: (\'simple\', \'grouped\', \'external\', \'variable\').', 'pmxi_plugin') ?>">?</a>
 											</div>
 										</div>
-										<div style="float:right;">
+										<!--div style="float:right;">
 											<label class="show_if_simple" for="_virtual" style="border-right:none;">
 												<input type="hidden" name="_virtual" value="0"/>
 												<?php _e('Virtual','woocommerce');?>: <input type="checkbox" id="_virtual" name="_virtual" <?php echo ($post['_virtual']) ? 'checked="checked"' : ''; ?>>
@@ -46,7 +46,7 @@
 												<input type="hidden" name="_downloadable" value="0"/>
 												<?php _e('Downloadable','woocommerce');?>: <input type="checkbox" id="_downloadable" name="_downloadable" <?php echo ($post['_downloadable']) ? 'checked="checked"' : ''; ?>>
 											</label>
-										</div>
+										</div-->
 									</span>
 								</h3>
 								<div class="clear"></div>
@@ -59,7 +59,7 @@
 
 											<li class="inventory_tab show_if_simple show_if_variable show_if_grouped inventory_options" style="display: block;"><a href="javascript:void(0);" rel="inventory_product_data"><?php _e('Inventory', 'woocommerce');?></a></li>
 
-											<li class="shipping_tab hide_if_virtual shipping_options hide_if_grouped hide_if_external"><a href="javascript:void(0);" rel="shipping_product_data"><?php _e('Shipping', 'woocommerce');?></a></li>
+											<li class="shipping_tab shipping_options hide_if_grouped hide_if_external"><a href="javascript:void(0);" rel="shipping_product_data"><?php _e('Shipping', 'woocommerce');?></a></li>
 
 											<li class="linked_product_tab linked_product_options"><a href="javascript:void(0);" rel="linked_product_data"><?php _e('Linked Products', 'woocommerce');?></a></li>
 

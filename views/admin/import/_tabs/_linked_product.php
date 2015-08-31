@@ -19,10 +19,11 @@
 
 		$posts_in = array_unique( (array) get_objects_in_term( get_term_by( 'slug', 'grouped', 'product_type' )->term_id, 'product_type' ) );
 		if ( sizeof( $posts_in ) > 0 ) {
+			$posts_in = array_slice($posts_in, 0, 100);
 			$args = array(
 				'post_type'		=> 'product',
 				'post_status' 	=> 'any',
-				'numberposts' 	=> -1,
+				'numberposts' 	=> 100,
 				'orderby' 		=> 'title',
 				'order' 		=> 'asc',
 				'post_parent' 	=> 0,

@@ -115,6 +115,13 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 			$count and $this->data['product_sku'] = array_fill(0, $count, "");
 		}
 
+		if ("" != $import->options['single_product_variation_description']){
+			$this->data['product_variation_description'] = XmlImportParser::factory($xml, $cxpath, $import->options['single_product_variation_description'], $file)->parse($records); $tmp_files[] = $file;
+		}
+		else{
+			$count and $this->data['product_variation_description'] = array_fill(0, $count, "");
+		}
+
 		if ("" != $import->options['single_product_url']){
 			$this->data['product_url'] = XmlImportParser::factory($xml, $cxpath, $import->options['single_product_url'], $file)->parse($records); $tmp_files[] = $file;
 		}
@@ -588,41 +595,78 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 		if ($this->options['update_all_data'] == 'yes' or $this->options['is_update_menu_order']) $this->wpdb->update( $this->wpdb->posts, array('menu_order' => ($product_menu_order[$i] != '') ? (int) $product_menu_order[$i] : 0 ), array('ID' => $pid));
 
 		// Save shipping class
-		if ( pmwi_is_update_taxonomy($articleData, $this->options, 'product_shipping_class') ){
+		if ( pmwi_is_update_taxonomy($articleData, $this->options, 'product_shipping_class') )
+		{
+			$p_shipping_class = false;
 
-			if (ctype_digit($product_shipping_class[$i])){
-
+			if (ctype_digit($product_shipping_class[$i]))
+			{
 				$p_shipping_class = $product_shipping_class[$i] > 0 && $product_type != 'external' ? absint( $product_shipping_class[$i] ) : '';			
 
-				$t_shipping_class = get_term_by('slug', $p_shipping_class, 'product_shipping_class');									
+				if ( $p_shipping_class != '' )
+				{
+					$t_shipping_class = get_term_by('slug', $p_shipping_class, 'product_shipping_class');									
 
-				if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) ) {
+					if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) ) 
+					{
+						$p_shipping_class = (int) $t_shipping_class->term_taxonomy_id; 						
+					}
+					else
+					{						
+						$t_shipping_class = term_exists( (int) $p_shipping_class, 'product_shipping_class', 0);	
+											
+						if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) )
+						{												
+							$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
+						}
+						else
+						{
+							$t_shipping_class = wp_insert_term(
+								$p_shipping_class, // the term 
+							  	'product_shipping_class' // the taxonomy										  	
+							);	
 
-					$p_shipping_class = (int) $t_shipping_class->term_taxonomy_id; 	
-					
-				}
-				else{
-					
-					$t_shipping_class = term_exists( (int) $product_shipping_class[$i], 'product_shipping_class', 0);	
-										
-					if ( ! is_wp_error($t_shipping_class) )												
-						$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
+							if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) )
+							{												
+								$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
+							}
+						}
+					}
 				}
 			}
 			else{
 
 				$t_shipping_class = term_exists($product_shipping_class[$i], 'product_shipping_class', 0);	
-				if ( empty($t_shipping_class) and !is_wp_error($t_shipping_class) ){																																
-					$t_shipping_class = term_exists(htmlspecialchars(strtolower($product_shipping_class[$i])), 'product_shipping_class', 0);						
+				
+				if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) )
+				{
+					$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
 				}
-				if ( ! is_wp_error($t_shipping_class) )												
-					$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 				
+				else
+				{
+					$t_shipping_class = term_exists(htmlspecialchars(strtolower($product_shipping_class[$i])), 'product_shipping_class', 0);	
+					
+					if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) )
+					{
+						$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
+					}
+					else
+					{
+						$t_shipping_class = wp_insert_term(
+							$product_shipping_class[$i], // the term 
+						  	'product_shipping_class' // the taxonomy										  	
+						);	
+
+						if ( ! empty($t_shipping_class) and ! is_wp_error($t_shipping_class) )
+						{												
+							$p_shipping_class = (int) $t_shipping_class['term_taxonomy_id']; 	
+						}
+					}
+				}			
 			}
 			
-			$this->associate_terms( $pid, array( $p_shipping_class ), 'product_shipping_class' );	
-
-			//wp_set_object_terms( $pid, $p_shipping_class, 'product_shipping_class');
-
+			if ( $p_shipping_class !== false and ! is_wp_error($p_shipping_class)) $this->associate_terms( $pid, array( $p_shipping_class ), 'product_shipping_class' );	
+			
 		}
 
 		// Unique SKU
@@ -662,6 +706,8 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 				$this->pushmeta($pid, '_sku', '' );
 			}
 		}
+
+		$this->pushmeta($pid, '_variation_description', wp_kses_post($product_variation_description[$i]) );
 
 		// Save Attributes
 		$attributes = array();
@@ -934,7 +980,7 @@ class PMWI_Import_Record extends PMWI_Model_Record {
 
 				$stock_status = 'instock';
 
-			} elseif ( 'variable' === $product_type ) {
+			} elseif ( 'variable' === $product_type and ! $this->options['link_all_variations'] ) {
 
 				// Stock status is always determined by children so sync later
 				$stock_status = '';

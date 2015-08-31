@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
-Version: 1.2.3
+Version: 1.2.4
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.2.3');
+define('PMWI_FREE_VERSION', '1.2.4');
 
 define('PMWI_EDITION', 'free');
 
@@ -558,6 +558,11 @@ final class PMWI_Plugin {
 			'single_variable_product_downloadable_use_parent' => 0,
 			'variable_download_limit_use_parent' => 0,
 			'variable_download_expiry_use_parent' => 0,
+
+			'single_product_variation_description' => '',
+			'variable_description' => '',
+			'variable_description_use_parent' => 0,
+				
 			'first_is_parent' => 'yes',
 			'single_product_whosale_price' => '',
 			'variable_whosale_price' => '',
