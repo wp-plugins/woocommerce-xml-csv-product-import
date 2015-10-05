@@ -222,7 +222,7 @@
 	});
     
 
-	$('.variation_attributes, #woocommerce_attributes').find('label').live({
+	$('.variation_attributes').find('label').live({
         mouseenter:
            function()
             {           	
@@ -232,6 +232,8 @@
 					
 					$(this).parents('span:first').find('input').attr('id', $(this).parents('span:first').find('input').attr('name').replace('[]','') + '_' + counter );
 					$(this).attr('for', $(this).parents('span:first').find('input').attr('id'));
+					var $create_terms = $(this).parents('.wpallimport-radio-field:first').find('.is_create_taxonomy');
+					if ( ! $create_terms.hasClass('switcher-target-is_taxonomy_' + counter)) $create_terms.addClass('switcher-target-is_taxonomy_' + counter);
 				}
             },
         mouseleave:
@@ -239,6 +241,46 @@
            {
 
            }
+    });
+
+    $('.add-new-custom').click(function(){
+
+    	var counter = $(this).parents('table:first').find('tr.form-field:visible').length - 1;
+
+    	$('#woocommerce_attributes').find('.default_attribute_settings').find('label').each(function(){
+    		if ( "" == $(this).attr('for') )
+           	{
+           		var $parent = $(this).parents('tr.form-field:first');
+           		if ( ! $parent.hasClass('template'))
+           		{           							
+					$(this).parents('span:first').find('input').attr('id', $(this).parents('span:first').find('input').attr('name').replace('[]','') + '_' + counter );
+					$(this).attr('for', $(this).parents('span:first').find('input').attr('id'));
+					var $create_terms = $(this).parents('.wpallimport-radio-field:first').find('.is_create_taxonomy');
+					if ( ! $create_terms.hasClass('switcher-target-is_taxonomy_' + counter)) $create_terms.addClass('switcher-target-is_taxonomy_' + counter);
+           		}				
+			}
+    	});
+
+    	$('#woocommerce_attributes').find('.advanced_settings_template').each(function(){
+    		var $tpl = $(this).parents('tr.form-field:first');
+       		if ( ! $tpl.hasClass('template'))
+       		{  
+	    		$(this).find('label').each(function(){    		   			    			
+		   			$(this).attr('for', $(this).attr('for').replace('00', counter));							
+		    	});
+		    	$(this).find('input').each(function(){    		   			    			
+		   			if (typeof $(this).attr('id') != "undefined") $(this).attr('id', $(this).attr('id').replace('00', counter));							
+		   			$(this).attr('name', $(this).attr('name').replace('00', counter));
+		    	});
+		    	$(this).find('div.set_with_xpath').each(function(){
+		    		var $parent = $(this).parents('.wpallimport-radio-field:first');
+		    		$(this).addClass('switcher-target-' + $parent.find('input.switcher').attr('id'));
+		    		$parent.find('input.switcher').change();
+		    	});
+		    	$(this).removeClass('advanced_settings_template');
+		    }
+    	});    	    	
+
     });
 
 	$('#variations_tag').draggable({ containment: "#wpwrap", zIndex: 100 }).hide();	
@@ -302,20 +344,30 @@
 		$('.pmwi_adjust_prices').slideToggle();
 	});
 
-	$('.form-field, .main_choise').live('click', function(){
-		if ($(this).find('input:first').attr('disabled') == 'disabled'){
-			var $el = $(".upgrade_template:visible"),
-		        x = 100,
-		        originalColor = $el.css("background"),
-		        i = 2; //counter
+	$('.advanced_attributes').live('click', function(){
+		var $parent = $(this).parent('div.wpallimport-radio-field:first');
 
-		    (function loop() { //recurisve IIFE
-		        $el.css("background", "#FF8383");    
-		        setTimeout(function () {
-		            $el.css("background", originalColor);
-		            if (--i) setTimeout(loop, x); //restart loop
-		        }, x);
-		    }());			
+		if ($(this).find('span').html() == "+")
+		{
+			$parent.find('.default_attribute_settings').hide();
+			$parent.find('.advanced_attribute_settings').fadeIn();
+			$parent.find('input[name^=is_advanced]').val('1');
+			$(this).find('span').html("-");			
+		}
+		else
+		{
+			$parent.find('.advanced_attribute_settings').hide();
+			$parent.find('.default_attribute_settings').fadeIn();
+			$parent.find('input[name^=is_advanced]').val('0');
+			$(this).find('span').html("+");
+		}
+	});
+
+	$('input[name^=is_advanced]').each(function(){
+		if ($(this).val() == '1')
+		{
+			var $parent = $(this).parent('div.wpallimport-radio-field:first');
+			$parent.find('.advanced_attributes').click();
 		}
 	});
 

@@ -2,7 +2,7 @@
 Contributors: soflyy, wpallimport 
 Requires at least: 4.1
 Tested up to: 4.3
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce xml import, woocommerce csv import, woocommerce, import, xml, csv, wp all import, csv import, import csv, xml import, import xml, woocommerce csv importer, woocommerce xml importer, csv importer, csv import suite
@@ -82,6 +82,11 @@ The WooCommerce add-on will appear in the Step 4 of WP All Import.
 1. The WooCommerce add-on.
 
 == Changelog ==
+
+= 1.2.5 =
+* fixed conflict between options [update only these custom fields & update only these attributes]
+* added feature to dynamically set attribute options
+* added new option "Convert decimal separator to a period"   
 
 = 1.2.4 =
 * added Variation Description field

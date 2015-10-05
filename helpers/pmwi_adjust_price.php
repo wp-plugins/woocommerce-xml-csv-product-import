@@ -2,7 +2,7 @@
 function pmwi_adjust_price( $price, $field, $options ){
 
 	switch ($field) {
-
+		case 'variable_regular_price':
 		case 'regular_price':
 			
 			if ( ! empty($options['single_product_regular_price_adjust']) ){
@@ -19,10 +19,11 @@ function pmwi_adjust_price( $price, $field, $options ){
 						break;						
 				}
 
+				$price = ( (double) $price > 0) ? number_format( (double) $price, 2, '.', '' ) : 0;
 			}
 
 			break;
-
+		case 'variable_sale_price':	
 		case 'sale_price':
 			
 			if ( ! empty($options['single_product_sale_price_adjust']) ){
@@ -39,6 +40,8 @@ function pmwi_adjust_price( $price, $field, $options ){
 						break;						
 				}
 
+				$price = ( (double) $price > 0) ? number_format( (double) $price, 2, '.', '' ) : 0;
+
 			}
 
 			break;
@@ -50,6 +53,6 @@ function pmwi_adjust_price( $price, $field, $options ){
 			break;
 	}
 
-	return ( (double) $price > 0) ? number_format( (double) $price, 2, '.', '' ) : 0;
+	return $price;
 
 }

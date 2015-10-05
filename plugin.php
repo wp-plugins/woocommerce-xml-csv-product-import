@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Add-On
 Plugin URI: http://www.wpallimport.com/
 Description: An extremely easy, drag & drop importer to import WooCommerce simple products. A paid upgrade is available for premium support and support for Variable, Grouped, and External/Affiliate products
-Version: 1.2.4
+Version: 1.2.5
 Author: Soflyy
 */
 /**
@@ -24,7 +24,7 @@ define('PMWI_ROOT_URL', rtrim(plugin_dir_url(__FILE__), '/'));
  */
 define('PMWI_PREFIX', 'pmwi_');
 
-define('PMWI_FREE_VERSION', '1.2.4');
+define('PMWI_FREE_VERSION', '1.2.5');
 
 define('PMWI_EDITION', 'free');
 
@@ -477,6 +477,17 @@ final class PMWI_Plugin {
 			'is_visible' => array(),
 			'is_taxonomy' => array(),
 			'create_taxonomy_in_not_exists' => array(),
+
+			'is_advanced' => array(),
+			'advanced_in_variations' => array(),
+			'advanced_in_variations_xpath' => array(),
+			'advanced_is_visible' => array(),
+			'advanced_is_visible_xpath' => array(),
+			'advanced_is_taxonomy' => array(),
+			'advanced_is_taxonomy_xpath' => array(),
+			'advanced_is_create_terms' => array(),
+			'advanced_is_create_terms_xpath' => array(),
+
 			'single_product_purchase_note' => '',
 			'single_product_menu_order' => 0,			
 			'is_product_enable_reviews' => 'no',
@@ -573,6 +584,7 @@ final class PMWI_Plugin {
 			'disable_sku_matching' => 1,
 			'disable_prepare_price' => 1,
 			'prepare_price_to_woo_format' => 0,
+			'convert_decimal_separator' => 1,
 			'grouping_indicator' => 'xpath',				
 			'custom_grouping_indicator_name' => '',
 			'custom_grouping_indicator_value' => '',

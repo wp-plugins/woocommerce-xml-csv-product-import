@@ -62,11 +62,15 @@
 .wpallimport-plugin .in_variations select, .wpallimport-plugin .is_visible select, .wpallimport-plugin .is_taxonomy select{
 	float:none !important;
 }
-.wpallimport-plugin .in_variations, .wpallimport-plugin .is_visible, .wpallimport-plugin .is_taxonomy, .wpallimport-plugin .is_create_taxonomy{
+.wpallimport-plugin .in_variations, .wpallimport-plugin .is_visible, .wpallimport-plugin .is_taxonomy{
 	display: block;
 	float: left;
-	margin-top: 10px;
-	margin-left: 5px;	
+	margin: 5px 0 0 5px;
+}
+.wpallimport-plugin .is_create_taxonomy {
+	display: block;
+	float: left;
+	margin: 5px 0 15px 5px;
 }
 .wpallimport-plugin .in_variations label, .wpallimport-plugin .is_visible label, .wpallimport-plugin .is_taxonomy label{
 	width: 80px;
@@ -321,4 +325,60 @@
 	position: relative;
 	z-index: 9999999;
 	display: block;
+}
+.wpallimport-plugin .advanced_attributes{
+	display: inline-block;
+	float: left;
+	width: 16px;
+	height: 16px;
+	margin: 6px 3px 0px 3px;	
+}
+.wpallimport-plugin .advanced_attributes{ 	
+	font-size: 12px;
+	width:100%;
+	height:25px;	
+	color:#21759B;
+	font-family: "Open Sans",​sans-serif;
+	padding-top: 2px;
+	text-decoration: underline;	
+	/*margin: 0 auto;	*/
+}
+.wpallimport-plugin .advanced_attributes span{
+	font-size: 16px;
+	position: relative;
+	top: 1px;
+}
+.wpallimport-plugin .advanced_attribute_settings{
+	clear: both;
+	display: none;
+	margin-bottom: 10px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #e5e5e5;
+}
+.wpallimport-plugin .advanced_attribute_settings div.input{
+	clear: both;
+	vertical-align: top;
+}
+
+.wpallimport-plugin .advanced_attribute_settings>div.input {
+	width: 40%;
+	min-width: 170px;
+	margin-top: 10px;
+}
+
+.wpallimport-plugin .advanced_attribute_settings>div.input:nth-child(3),
+.wpallimport-plugin .advanced_attribute_settings>div.input:nth-child(4){
+	margin-top: 15px;
+}
+.wpallimport-plugin .advanced_attribute_settings div.input label{
+	top: -7px !important;
+}
+.wpallimport-plugin .advanced_attribute_settings input[type="text"]{
+	font-size: 12px !important;
+	height: 30px !important;
+	/*float: right;*/
+	/*width: 120px;*/
+}
+.wpallimport-plugin .advanced_attribute_settings input[type="radio"]{
+	float: left;
 }

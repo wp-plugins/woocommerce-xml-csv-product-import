@@ -1,7 +1,7 @@
 <?php
 function pmwi_pmxi_custom_field_to_update( $field_to_update, $post_type, $options, $m_key ){
 
-	if ($field_to_update === false || $post_type != 'product') return $field_to_update;		
+	if ($field_to_update === false || $post_type != 'product' || strpos($m_key, 'attribute_') === false) return $field_to_update;	
 
 	// Do not update attributes
 	if ($options['update_all_data'] == 'no' and ! $options['is_update_attributes'] and ( ! in_array($cur_meta_key, array('_default_attributes', '_product_attributes')) or strpos($cur_meta_key, "attribute_") === false)) return true;
